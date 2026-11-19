@@ -68,7 +68,7 @@
 - npm scripts (backend): `dev`, `build`, `start`, `test`, `test:unit`, `typecheck`, `migrate`, `seed`, `db:create`
 - `.env.example`: `DATABASE_URL`, `DATABASE_URL_TEST`, `PORT=4000`, `CORS_ORIGIN=http://localhost:5173`, `AUTH_PASSWORD`, `AUTH_SECRET`
 
-- [ ] **Step 1:** Test `GET /api/health` returns `200 { ok: true }`. Run `npm test` → FAIL.
+- [x] **Step 1:** Test `GET /api/health` returns `200 { ok: true }`. Run `npm test` → FAIL.
 - [ ] **Step 2:** Implement `createApp` with the health route. Run → PASS.
 - [ ] **Step 3:** `db:create` script connects to the `postgres` maintenance DB and creates `acme` and `acme_test` if missing (psql is not available locally).
 - [ ] **Step 4:** Frontend: `npm test` (one trivial test) and `npm run build` pass.

@@ -1,0 +1,13 @@
+# Local PostgreSQL for reviewers: `docker compose up -d`
+# Then use the URLs in backend/.env.example (user postgres, password postgres).
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+volumes:
+  pgdata:
