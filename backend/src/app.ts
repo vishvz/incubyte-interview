@@ -80,6 +80,19 @@ export function createApp(db: Knex, options: AppOptions) {
   };
   app.use('/api', requireAuth);
 
+  // TEMPORARY diagnostic (removed in the next commit): shows how Render's proxies present the client address.
+  app.get('/api/debug/client-ip', (req, res) => {
+    res.json({
+      ip: req.ip,
+      ips: req.ips,
+      remote: req.socket.remoteAddress,
+      xForwardedFor: req.get('x-forwarded-for') ?? null,
+      cfConnectingIp: req.get('cf-connecting-ip') ?? null,
+      trueClientIp: req.get('true-client-ip') ?? null,
+      xRealIp: req.get('x-real-ip') ?? null,
+    });
+  });
+
   app.use('/api/meta', metaRouter(db));
   app.use('/api/employees', employeesRouter(db, { today }));
   app.use('/api', salariesRouter(db, { today }));
