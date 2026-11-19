@@ -1,4 +1,4 @@
-import { Alert, Badge, Button, Group, Loader, Pagination, Select, Table, Text, TextInput, Title, UnstyledButton } from '@mantine/core';
+import { Alert, Badge, Button, Group, Loader, Pagination, Select, Table, TextInput, UnstyledButton } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
@@ -6,6 +6,8 @@ import { Link, useNavigate, useSearchParams } from 'react-router';
 import { apiFetch, qs } from '../api/client';
 import { paginationLabels } from '../lib/format';
 import type { EmployeeListItem, Page } from '../api/types';
+import { IconArrowsSort, IconPlus, IconSearch, IconSortAscending, IconSortDescending, IconUsers } from '@tabler/icons-react';
+import { EmptyState, PageHeader, PersonCell } from '../components/ui';
 import { useMeta, useMoney } from '../currency';
 import { formatDate } from '../lib/format';
 
@@ -64,8 +66,13 @@ export function Employees() {
         ta={align}
         aria-sort={active ? (filters.order === 'asc' ? 'ascending' : 'descending') : 'none'}
       >
-        <UnstyledButton onClick={() => sortBy(k)} fw={600} fz="sm">
-          {children} {active ? (filters.order === 'asc' ? '▲' : '▼') : ''}
+        <UnstyledButton onClick={() => sortBy(k)} fw={600} fz="sm" className="sort-button" data-align={align}>
+          {children}
+          {active ? (
+            filters.order === 'asc' ? <IconSortAscending size={15} aria-hidden="true" /> : <IconSortDescending size={15} aria-hidden="true" />
+          ) : (
+            <IconArrowsSort size={15} className="icon-muted" aria-hidden="true" />
+          )}
         </UnstyledButton>
       </Table.Th>
     );
@@ -81,24 +88,22 @@ export function Employees() {
 
   return (
     <>
-      <Group justify="space-between" mb="md">
-        <div>
-          <Title order={1} size="h2">
-            Employees
-          </Title>
-          <Text c="dimmed" size="sm">
-            {data ? `${data.total.toLocaleString('en-US')} people. ` : ''}{salaryNote}.{sortNote}
-          </Text>
-        </div>
-        <Button component={Link} to="/employees/new">
-          Add employee
-        </Button>
-      </Group>
+      <PageHeader
+        icon={IconUsers}
+        title="Employees"
+        description={<>{data ? `${data.total.toLocaleString('en-US')} people. ` : ''}{salaryNote}.{sortNote}</>}
+        actions={
+          <Button component={Link} to="/employees/new" leftSection={<IconPlus size={18} />}>
+            Add employee
+          </Button>
+        }
+      />
 
       <Group gap="sm" mb="md" align="end" wrap="wrap">
         <TextInput
           label="Search"
           placeholder="Name, employee code or email"
+          leftSection={<IconSearch size={16} />}
           value={search}
           onChange={(e) => setSearch(e.currentTarget.value)}
           w={280}
@@ -148,7 +153,7 @@ export function Employees() {
       {query.isPending && <Loader mb="md" />}
 
       <Table.ScrollContainer minWidth={760}>
-        <Table highlightOnHover verticalSpacing="xs" bg="white" withTableBorder>
+        <Table highlightOnHover verticalSpacing="sm" bg="white" withTableBorder>
           <Table.Thead>
             <Table.Tr>
               <SortHeader k="name">Name</SortHeader>
@@ -166,21 +171,19 @@ export function Employees() {
             {data?.items.map((e) => (
               <Table.Tr key={e.id} className="clickable-row" onClick={() => navigate(`/employees/${e.id}`)}>
                 <Table.Td>
-                  <Link to={`/employees/${e.id}`} onClick={(ev) => ev.stopPropagation()} style={{ color: 'inherit' }}>
-                    {e.lastName}, {e.firstName}
-                  </Link>{' '}
-                  <Text span size="xs" c="dimmed">
-                    {e.employeeCode}
-                  </Text>
-                  {e.status === 'terminated' && (
-                    <Badge ml="xs" size="xs" color="gray" variant="light">
-                      Terminated
-                    </Badge>
-                  )}
+                  <PersonCell
+                    id={e.id}
+                    firstName={e.firstName}
+                    lastName={e.lastName}
+                    sub={e.employeeCode}
+                    terminated={e.status === 'terminated'}
+                  />
                 </Table.Td>
                 <Table.Td>{e.jobTitle}</Table.Td>
                 <Table.Td>{e.department}</Table.Td>
-                <Table.Td>{e.level}</Table.Td>
+                <Table.Td>
+                  <Badge variant="outline" color="gray" tt="none">{e.level}</Badge>
+                </Table.Td>
                 <Table.Td>{e.country}</Table.Td>
                 <Table.Td className="num">{formatDate(e.hireDate)}</Table.Td>
                 <Table.Td ta="right" className="num">
@@ -191,9 +194,7 @@ export function Employees() {
             {data && data.items.length === 0 && (
               <Table.Tr>
                 <Table.Td colSpan={7}>
-                  <Text c="dimmed" py="lg" ta="center">
-                    No employees match these filters. Clear a filter or change the search.
-                  </Text>
+                  <EmptyState title="No employees match">Clear a filter or change the search.</EmptyState>
                 </Table.Td>
               </Table.Tr>
             )}

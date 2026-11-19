@@ -1,4 +1,17 @@
-import { Alert, Anchor, Badge, Button, Grid, Group, Loader, Paper, Select, Stack, Table, Text, Textarea, TextInput, Title } from '@mantine/core';
+import { Alert, Anchor, Avatar, Badge, Button, Grid, Group, Loader, Paper, Select, Stack, Table, Text, Textarea, TextInput, Title } from '@mantine/core';
+import {
+  IconArrowLeft,
+  IconBriefcase,
+  IconBuilding,
+  IconCalendarEvent,
+  IconCheck,
+  IconHistory,
+  IconId,
+  IconMail,
+  IconPencil,
+  IconTrendingUp,
+  IconWorld,
+} from '@tabler/icons-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router';
@@ -6,6 +19,7 @@ import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YA
 import { ApiError, apiFetch, post } from '../api/client';
 import type { EmployeeProfile as Profile, Salary, SalaryReason } from '../api/types';
 import { paddedDomain, RangeBar } from '../components/RangeBar';
+import { ChangeDelta, ReasonBadge } from '../components/ui';
 import { useMoney } from '../currency';
 import { formatDate, REASON_LABELS, todayIso } from '../lib/format';
 import { formatMinor, parseMajorToMinor } from '../lib/money';
@@ -39,30 +53,44 @@ export function EmployeeProfile() {
 
   return (
     <Stack gap="lg">
-      <Group justify="space-between" align="start">
-        <div>
-          <Anchor component={Link} to="/employees" size="sm">
-            Employees
-          </Anchor>
-          <Title order={1} size="h2">
-            {e.firstName} {e.lastName}
-            {e.status === 'terminated' && (
-              <Badge ml="sm" color="gray" variant="light" style={{ verticalAlign: 'middle' }}>
-                Terminated
-              </Badge>
-            )}
-          </Title>
-          <Text c="dimmed">
-            {e.jobTitle}, {e.department}. Level {e.level} in {e.country}. Hired {formatDate(e.hireDate)}.
-          </Text>
-          <Text c="dimmed" size="sm">
-            {e.employeeCode}, {e.email}
-          </Text>
-        </div>
-        <Button variant="default" component={Link} to={`/employees/${e.id}/edit`}>
-          Edit details
-        </Button>
-      </Group>
+      <div>
+        <Anchor component={Link} to="/employees" size="sm" className="back-link">
+          <IconArrowLeft size={14} aria-hidden="true" /> All employees
+        </Anchor>
+        <Group justify="space-between" align="start" mt="xs" wrap="wrap">
+          <Group gap="md" wrap="nowrap" align="center">
+            <Avatar size={64} radius="xl" color="ledger" variant="filled">
+              {(e.firstName[0] + e.lastName[0]).toUpperCase()}
+            </Avatar>
+            <div>
+              <Group gap="sm">
+                <Title order={1} size="h2">
+                  {e.firstName} {e.lastName}
+                </Title>
+                <Badge variant="outline" color="gray" tt="none">
+                  {e.level}
+                </Badge>
+                {e.status === 'terminated' && (
+                  <Badge color="gray" variant="light">
+                    Terminated
+                  </Badge>
+                )}
+              </Group>
+              <Group gap="lg" mt={6} className="meta-row">
+                <span><IconBriefcase size={15} aria-hidden="true" /> {e.jobTitle}</span>
+                <span><IconBuilding size={15} aria-hidden="true" /> {e.department}</span>
+                <span><IconWorld size={15} aria-hidden="true" /> {e.country}</span>
+                <span><IconCalendarEvent size={15} aria-hidden="true" /> Hired {formatDate(e.hireDate)}</span>
+                <span><IconId size={15} aria-hidden="true" /> {e.employeeCode}</span>
+                <span><IconMail size={15} aria-hidden="true" /> {e.email}</span>
+              </Group>
+            </div>
+          </Group>
+          <Button variant="default" component={Link} to={`/employees/${e.id}/edit`} leftSection={<IconPencil size={16} />}>
+            Edit details
+          </Button>
+        </Group>
+      </div>
 
       {current && (
         <Paper withBorder p="lg">
@@ -105,8 +133,8 @@ export function EmployeeProfile() {
       <Grid gap="lg">
         <Grid.Col span={{ base: 12, md: 8 }}>
           <Paper withBorder p="lg">
-            <Title order={2} size="h4" mb="sm">
-              Salary history
+            <Title order={2} size="h4" mb="sm" className="panel-title">
+              <IconHistory size={20} stroke={1.7} aria-hidden="true" /> Salary history
             </Title>
             {e.history.length > 1 && <HistoryChart history={e.history} />}
             <HistoryTable history={e.history} />
@@ -188,7 +216,7 @@ function HistoryTable({ history }: { history: Salary[] }) {
               <Table.Tr key={s.id}>
                 <Table.Td className="num">{formatDate(s.effectiveDate)}</Table.Td>
                 <Table.Td>
-                  {REASON_LABELS[s.reason]}
+                  <ReasonBadge reason={s.reason} />
                   {s.note && (
                     <Text size="xs" c="dimmed">
                       {s.note}
@@ -198,8 +226,8 @@ function HistoryTable({ history }: { history: Salary[] }) {
                 <Table.Td ta="right" className="num">
                   {money.format(s.amountMinor, s.currency)}
                 </Table.Td>
-                <Table.Td ta="right" className="num">
-                  {pct === null ? '' : `${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%`}
+                <Table.Td ta="right">
+                  <ChangeDelta pct={pct} />
                 </Table.Td>
               </Table.Tr>
             );
@@ -248,8 +276,8 @@ function RecordChange({ employeeId, currency, hireDate }: { employeeId: number; 
         }}
       >
         <Stack>
-          <Title order={2} size="h4">
-            Record salary change
+          <Title order={2} size="h4" className="panel-title">
+            <IconTrendingUp size={20} stroke={1.7} aria-hidden="true" /> Record salary change
           </Title>
           <Text size="sm" c="dimmed">
             Adds a new entry. Earlier salaries stay in the history.
@@ -283,8 +311,12 @@ function RecordChange({ employeeId, currency, hireDate }: { employeeId: number; 
           {save.error && !shownInFields && (
             <Alert color="red">{save.error instanceof ApiError ? save.error.describe() : save.error.message}</Alert>
           )}
-          {save.isSuccess && <Alert color="ledger">Salary change recorded.</Alert>}
-          <Button type="submit" loading={save.isPending}>
+          {save.isSuccess && (
+            <Alert color="ledger" icon={<IconCheck size={18} />}>
+              Salary change recorded.
+            </Alert>
+          )}
+          <Button type="submit" loading={save.isPending} leftSection={<IconCheck size={16} />}>
             Record salary change
           </Button>
         </Stack>

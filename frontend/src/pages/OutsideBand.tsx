@@ -1,11 +1,13 @@
-import { Alert, Group, Loader, Pagination, Paper, SegmentedControl, Select, SimpleGrid, Stack, Table, Text, Title } from '@mantine/core';
+import { Alert, Group, Loader, Pagination, Paper, SegmentedControl, Select, SimpleGrid, Stack, Table } from '@mantine/core';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
 import { apiFetch, qs } from '../api/client';
 import { paginationLabels } from '../lib/format';
 import type { BandCheck } from '../api/types';
 import { paddedDomain, RangeBar } from '../components/RangeBar';
+import { IconArrowDownRight, IconArrowUpRight, IconCircleCheck, IconScale } from '@tabler/icons-react';
+import { EmptyState, PageHeader, PersonCell, StatTile } from '../components/ui';
 import { useMeta, useMoney } from '../currency';
 
 const PAGE_SIZE = 25;
@@ -32,14 +34,11 @@ export function OutsideBand() {
 
   return (
     <Stack>
-      <div>
-        <Title order={1} size="h2">
-          Outside band
-        </Title>
-        <Text c="dimmed" size="sm">
-          Active employees whose current salary is outside the pay band for their level and country. Biggest gaps first.
-        </Text>
-      </div>
+      <PageHeader
+        icon={IconScale}
+        title="Outside band"
+        description="Active employees whose current salary is outside the pay band for their level and country. Biggest gaps first."
+      />
 
       <Group gap="sm" align="end" wrap="wrap">
         <Select
@@ -63,22 +62,10 @@ export function OutsideBand() {
       </Group>
 
       {counts && (
-        <SimpleGrid cols={{ base: 1, xs: 3 }} maw={640}>
-          <Paper withBorder p="md">
-            <Text size="sm" fw={600} className="position-below">Below band</Text>
-            <Text fz={28} fw={650} className="num">{counts.below.toLocaleString('en-US')}</Text>
-            <Text size="xs" c="dimmed">{share(counts.below)} of people with a band</Text>
-          </Paper>
-          <Paper withBorder p="md">
-            <Text size="sm" fw={600}>Within band</Text>
-            <Text fz={28} fw={650} className="num">{counts.within.toLocaleString('en-US')}</Text>
-            <Text size="xs" c="dimmed">{share(counts.within)}</Text>
-          </Paper>
-          <Paper withBorder p="md">
-            <Text size="sm" fw={600} className="position-above">Above band</Text>
-            <Text fz={28} fw={650} className="num">{counts.above.toLocaleString('en-US')}</Text>
-            <Text size="xs" c="dimmed">{share(counts.above)}</Text>
-          </Paper>
+        <SimpleGrid cols={{ base: 1, xs: 3 }} maw={780}>
+          <StatTile icon={IconArrowDownRight} tone="below" label="Below band" value={counts.below.toLocaleString('en-US')} note={`${share(counts.below)} of people with a band`} />
+          <StatTile icon={IconCircleCheck} label="Within band" value={counts.within.toLocaleString('en-US')} note={share(counts.within)} />
+          <StatTile icon={IconArrowUpRight} tone="above" label="Above band" value={counts.above.toLocaleString('en-US')} note={share(counts.above)} />
         </SimpleGrid>
       )}
 
@@ -87,8 +74,8 @@ export function OutsideBand() {
         value={position}
         onChange={(v) => { setPosition(v as 'below' | 'above'); setPage(1); }}
         data={[
-          { value: 'below', label: 'Show below band' },
-          { value: 'above', label: 'Show above band' },
+          { value: 'below', label: <span className="seg-label"><IconArrowDownRight size={16} aria-hidden="true" /> Show below band</span> },
+          { value: 'above', label: <span className="seg-label"><IconArrowUpRight size={16} aria-hidden="true" /> Show above band</span> },
         ]}
       />
 
@@ -114,10 +101,7 @@ export function OutsideBand() {
                   return (
                     <Table.Tr key={e.id} className="clickable-row" onClick={() => navigate(`/employees/${e.id}`)}>
                       <Table.Td>
-                        <Link to={`/employees/${e.id}`} onClick={(ev) => ev.stopPropagation()} style={{ color: 'inherit' }}>
-                          {e.firstName} {e.lastName}
-                        </Link>
-                        <Text size="xs" c="dimmed">{e.jobTitle}</Text>
+                        <PersonCell id={e.id} firstName={e.firstName} lastName={e.lastName} sub={e.jobTitle} />
                       </Table.Td>
                       <Table.Td>{e.level}, {e.country}</Table.Td>
                       <Table.Td ta="right" className="num">{money.format(e.amountMinor, e.currency, { cents: false })}</Table.Td>
@@ -139,9 +123,7 @@ export function OutsideBand() {
                 {data.items.length === 0 && (
                   <Table.Tr>
                     <Table.Td colSpan={6}>
-                      <Text c="dimmed" ta="center" py="lg">
-                        Nobody is paid {position} band for these filters.
-                      </Text>
+                      <EmptyState title={`Nobody is paid ${position} band`}>No one matches these filters.</EmptyState>
                     </Table.Td>
                   </Table.Tr>
                 )}

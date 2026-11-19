@@ -1,10 +1,12 @@
-import { Alert, Loader, Paper, Stack, Table, Text, Title } from '@mantine/core';
+import { Alert, Loader, Paper, Stack, Table, Text } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router';
+
 import { apiFetch } from '../api/client';
 import type { RecentChange } from '../api/types';
+import { IconHistory } from '@tabler/icons-react';
+import { ChangeDelta, EmptyState, PageHeader, PersonCell, ReasonBadge } from '../components/ui';
 import { useMoney } from '../currency';
-import { formatDate, REASON_LABELS } from '../lib/format';
+import { formatDate } from '../lib/format';
 
 export function Changes() {
   const money = useMoney();
@@ -15,14 +17,11 @@ export function Changes() {
 
   return (
     <Stack>
-      <div>
-        <Title order={1} size="h2">
-          Recent changes
-        </Title>
-        <Text c="dimmed" size="sm">
-          The 50 latest salary changes by effective date, including new hires.
-        </Text>
-      </div>
+      <PageHeader
+        icon={IconHistory}
+        title="Recent changes"
+        description="The 50 latest salary changes by effective date, including new hires."
+      />
       {query.isPending && <Loader />}
       {query.error && <Alert color="red">{query.error.message}</Alert>}
       {query.data && (
@@ -44,30 +43,30 @@ export function Changes() {
                   <Table.Tr key={c.id}>
                     <Table.Td className="num">{formatDate(c.effectiveDate)}</Table.Td>
                     <Table.Td>
-                      <Link to={`/employees/${c.employeeId}`} style={{ color: 'inherit' }}>
-                        {c.employeeName}
-                      </Link>
-                      <Text size="xs" c="dimmed">{c.employeeCode}</Text>
+                      <PersonCell
+                        id={c.employeeId}
+                        firstName={c.employeeName.split(' ')[0]}
+                        lastName={c.employeeName.split(' ').slice(1).join(' ')}
+                        sub={c.employeeCode}
+                      />
                     </Table.Td>
                     <Table.Td>
-                      {REASON_LABELS[c.reason]}
+                      <ReasonBadge reason={c.reason} />
                       {c.note && <Text size="xs" c="dimmed">{c.note}</Text>}
                     </Table.Td>
                     <Table.Td ta="right" className="num">
                       {c.previousMinor === null ? '' : money.format(c.previousMinor, c.currency, { cents: false })}
                     </Table.Td>
                     <Table.Td ta="right" className="num">{money.format(c.amountMinor, c.currency, { cents: false })}</Table.Td>
-                    <Table.Td ta="right" className="num">
-                      {c.changePct === null ? 'New hire' : `${c.changePct >= 0 ? '+' : ''}${c.changePct.toFixed(1)}%`}
+                    <Table.Td ta="right">
+                      {c.changePct === null ? <span className="icon-muted">New hire</span> : <ChangeDelta pct={c.changePct} />}
                     </Table.Td>
                   </Table.Tr>
                 ))}
                 {query.data.items.length === 0 && (
                   <Table.Tr>
                     <Table.Td colSpan={6}>
-                      <Text c="dimmed" ta="center" py="lg">
-                        No salary changes yet. Record one from an employee's profile.
-                      </Text>
+                      <EmptyState title="No salary changes yet">Record one from an employee's profile.</EmptyState>
                     </Table.Td>
                   </Table.Tr>
                 )}

@@ -1,7 +1,9 @@
-import { Alert, Loader, Paper, Stack, Table, Text, Title } from '@mantine/core';
+import { Alert, Loader, Paper, Stack, Table } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
 import { apiFetch, qs } from '../api/client';
 import type { Payroll as PayrollData } from '../api/types';
+import { IconCoins } from '@tabler/icons-react';
+import { PageHeader } from '../components/ui';
 import { useMoney } from '../currency';
 import { formatDate } from '../lib/format';
 import { formatMinor } from '../lib/money';
@@ -19,15 +21,11 @@ export function Payroll() {
 
   return (
     <Stack>
-      <div>
-        <Title order={1} size="h2">
-          Payroll by department
-        </Title>
-        <Text c="dimmed" size="sm">
-          Total annual base salary of active employees, in {currency}
-          {data ? ` at rates as of ${formatDate(data.rateAsOf)}` : ''}. Choose another currency in the sidebar.
-        </Text>
-      </div>
+      <PageHeader
+        icon={IconCoins}
+        title="Payroll by department"
+        description={`Total annual base salary of active employees, in ${currency}${data ? ` at rates as of ${formatDate(data.rateAsOf)}` : ''}. Choose another currency in the sidebar.`}
+      />
       {query.isPending && <Loader />}
       {query.error && <Alert color="red">{query.error.message}</Alert>}
       {data && (

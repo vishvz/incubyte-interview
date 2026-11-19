@@ -1,9 +1,11 @@
-import { Alert, Group, Loader, Paper, SegmentedControl, Select, Stack, Table, Text, Title } from '@mantine/core';
+import { Alert, Group, Loader, Paper, SegmentedControl, Select, Stack, Table, Text } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { apiFetch, qs } from '../api/client';
 import type { CountryLevelRow, DepartmentRow, Distribution } from '../api/types';
 import { paddedDomain, RangeBar } from '../components/RangeBar';
+import { IconBuilding, IconChartBar, IconStairs } from '@tabler/icons-react';
+import { PageHeader } from '../components/ui';
 import { useMeta, useMoney } from '../currency';
 import { formatDate } from '../lib/format';
 import { formatMinor } from '../lib/money';
@@ -33,21 +35,18 @@ export function PayRanges() {
   const [view, setView] = useState<'level' | 'department'>('level');
   return (
     <Stack>
-      <div>
-        <Title order={1} size="h2">
-          Pay ranges
-        </Title>
-        <Text c="dimmed" size="sm">
-          Medians rather than averages, so a few high earners do not skew the picture. Active employees only.
-        </Text>
-      </div>
+      <PageHeader
+        icon={IconChartBar}
+        title="Pay ranges"
+        description="Medians rather than averages, so a few high earners do not skew the picture. Active employees only."
+      />
       <SegmentedControl
         w="fit-content"
         value={view}
         onChange={(v) => setView(v as 'level' | 'department')}
         data={[
-          { value: 'level', label: 'By level in a country' },
-          { value: 'department', label: 'By department' },
+          { value: 'level', label: <span className="seg-label"><IconStairs size={16} aria-hidden="true" /> By level in a country</span> },
+          { value: 'department', label: <span className="seg-label"><IconBuilding size={16} aria-hidden="true" /> By department</span> },
         ]}
       />
       {view === 'level' ? <ByLevel /> : <ByDepartment />}

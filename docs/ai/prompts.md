@@ -25,3 +25,9 @@ Design brief I gave myself, using the frontend-design and dataviz skills:
 > A quiet tool for checking pay, built for an HR manager who lives in spreadsheets. Dense tables, tabular figures, one memorable element: a pay band range bar (band, P25–P75 box, median tick, employee marker) repeated wherever pay is compared. Validate chart colours for colour-blind separation; never show below/above band by colour alone.
 
 The chart palette was checked with the dataviz validator. The first green failed the chroma check, so I moved to `#0e9472`.
+
+## 5. UI polish
+
+> we're not going to deploy. i think ui still needs some work. there are no icons or proper ui
+
+Result: deployment dropped from the plan. The UI got an icon set, a proper app shell, an Overview landing page and shared components (page header, stat tile, person cell, reason badge, change delta, empty state). Each page was checked in the browser and with a Lighthouse accessibility audit.

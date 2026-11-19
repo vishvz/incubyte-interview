@@ -180,10 +180,14 @@ Pages and the question each answers:
 - [x] **Step 2:** Build pages. Run app against seeded DB; walk all five questions in the browser. Check a11y with `chrome-devtools-mcp:a11y-debugging`.
 - [x] **Step 3:** `npm test` and `npm run build` pass. Commit `feat(ui): directory, profiles, salary changes and insights`. Run `superpowers:requesting-code-review`.
 
-### Task 9: Deployment (later session)
+
 
 Managed Postgres (Neon), API on Render, frontend on Vercel. Set `CORS_ORIGIN`, `VITE_API_URL`, `AUTH_*`. Run migrate + seed on the hosted DB. Commit `chore: deployment config`.
 
 ### Task 10: Docs (later session)
 
 Root `README.md` (links, live URL, video), `backend/README.md`, `frontend/README.md` with local setup, `docs/architecture.md`, `docs/trade-offs.md`, `docs/performance.md` (`EXPLAIN ANALYZE` of list, distribution and payroll queries on 10k rows), finalize `docs/ai/*`. Commit `docs: architecture, trade-offs, performance and AI notes`.
+
+### Task 8b: UI polish (added after review of the running app)
+
+Feedback: the UI had no icons and did not feel like a finished product. Added Tabler icons (Mantine's companion set), a dark sidebar grouped into People and Pay insights, a header with an account menu, an Overview landing page (active headcount, payroll, people outside band, latest changes), shared page headers, avatars with initials, reason badges, change arrows, empty states and a split login screen. Accessibility re-checked with Lighthouse (100).

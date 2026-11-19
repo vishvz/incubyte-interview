@@ -1,9 +1,11 @@
-import { Alert, Anchor, Button, Group, Loader, Paper, Select, SimpleGrid, Stack, Text, TextInput, Title } from '@mantine/core';
+import { Alert, Anchor, Button, Group, Loader, Paper, Select, SimpleGrid, Stack, TextInput } from '@mantine/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { ApiError, apiFetch, patch, post } from '../api/client';
 import type { Employee, EmployeeProfile } from '../api/types';
+import { IconArrowLeft, IconCheck, IconPencil, IconUserPlus } from '@tabler/icons-react';
+import { PageHeader } from '../components/ui';
 import { useMeta } from '../currency';
 import { todayIso } from '../lib/format';
 import { parseMajorToMinor } from '../lib/money';
@@ -73,18 +75,18 @@ function FormBody({ id, initial }: { id?: string; initial: Fields }) {
   return (
     <Stack maw={720}>
       <div>
-        <Anchor component={Link} to={editing ? `/employees/${id}` : '/employees'} size="sm">
-          {editing ? 'Back to profile' : 'Employees'}
+        <Anchor component={Link} to={editing ? `/employees/${id}` : '/employees'} size="sm" className="back-link" mb="sm">
+          <IconArrowLeft size={14} aria-hidden="true" /> {editing ? 'Back to profile' : 'All employees'}
         </Anchor>
-        <Title order={1} size="h2">
-          {editing ? 'Edit details' : 'Add employee'}
-        </Title>
-        {editing && (
-          <Text c="dimmed" size="sm">
-            To change pay, record a salary change on the profile. Country cannot be changed because salary currency
-            follows it.
-          </Text>
-        )}
+        <PageHeader
+          icon={editing ? IconPencil : IconUserPlus}
+          title={editing ? 'Edit details' : 'Add employee'}
+          description={
+            editing
+              ? 'To change pay, record a salary change on the profile. Country is fixed because salary currency follows it.'
+              : 'Creates the employee and their starting salary as the first entry in their history.'
+          }
+        />
       </div>
       <Paper withBorder p="lg">
         <form
@@ -171,7 +173,7 @@ function FormBody({ id, initial }: { id?: string; initial: Fields }) {
               <Button variant="default" component={Link} to={editing ? `/employees/${id}` : '/employees'}>
                 Cancel
               </Button>
-              <Button type="submit" loading={save.isPending}>
+              <Button type="submit" loading={save.isPending} leftSection={<IconCheck size={16} />}>
                 {editing ? 'Save changes' : 'Add employee'}
               </Button>
             </Group>
