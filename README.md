@@ -4,7 +4,7 @@ A web app that replaces ACME's salary spreadsheets. The HR manager can find and 
 
 ![Overview page](docs/screenshots/overview.png)
 
-**Live:** API at https://acme-salaries-api.onrender.com (frontend: https://acme-salaries-web.onrender.com once Render has built it). Both are on Render's free plan; the API sleeps after 15 idle minutes, so the first request can take up to a minute.
+**Live:** app at https://acme-salaries-web.onrender.com, API at https://acme-salaries-api.onrender.com, database on Neon. Both run on Render's free plan; the API sleeps after 15 idle minutes, so the first sign-in after a pause can take up to a minute. Ask the author for the HR password.
 
 ## What it answers
 
