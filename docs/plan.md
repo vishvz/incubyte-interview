@@ -104,10 +104,10 @@ Tables:
 
 Generation rules: country weights US 40%, IN 25%, GB 15%, DE 12%, CA 8%. Salary drawn around the band mid (±25%), so roughly 10% fall outside the band. 1–4 salary rows per employee: first is `hire` at `hire_date`, later rows are increases of 2–15% with reason `annual_review` or `promotion` (promotion bumps level), occasional `adjustment`. All dates ≤ 2026-11-01 (fixed "today" for the seed; never `new Date()`).
 
-- [ ] **Step 1:** Tests: `mulberry32(42)` gives the same first 3 values twice; `generateEmployees(42, 100)` deep-equals a second call; 10,000 employees have unique codes and emails; every salary row has integer `amount_minor > 0`, currency matching country, and history dates ascending. Run → FAIL.
-- [ ] **Step 2:** Implement. Run → PASS.
-- [ ] **Step 3:** `npm run seed` against `acme`. Expect `10000 employees` logged in under 10 s.
-- [ ] **Step 4:** Commit `feat(seed): generate 10,000 deterministic employees with salary history`.
+- [x] **Step 1:** Tests: `mulberry32(42)` gives the same first 3 values twice; `generateEmployees(42, 100)` deep-equals a second call; 10,000 employees have unique codes and emails; every salary row has integer `amount_minor > 0`, currency matching country, and history dates ascending. Run → FAIL.
+- [x] **Step 2:** Implement. Run → PASS.
+- [x] **Step 3:** `npm run seed` against `acme`. Expect `10000 employees` logged in under 10 s.
+- [x] **Step 4:** Commit `feat(seed): generate 10,000 deterministic employees with salary history`.
 
 ### Task 5: Employee API
 
@@ -137,7 +137,7 @@ Generation rules: country weights US 40%, IN 25%, GB 15%, DE 12%, CA 8%. Salary 
 - `GET /api/salary-changes/recent?limit=20` (max 100) → `{ items: { id, employeeId, employeeName, previousMinor | null, amountMinor, currency, changePct | null, effectiveDate, reason, note }[] }` ordered by `effective_date desc, id desc`; `previousMinor` via `lag()` window.
 
 - [ ] **Step 1:** Tests: adding a raise makes it current and keeps the old row; backdated change appears in history but current stays the newer one; future date → 400; recent feed shows previous amount and percent. Run → FAIL.
-- [ ] **Step 2:** Implement. Run → PASS.
+- [x] **Step 2:** Implement. Run → PASS.
 - [ ] **Step 3:** Commit `feat(api): append-only salary changes and recent changes feed`.
 
 ### Task 7: Insights
