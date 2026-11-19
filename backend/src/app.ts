@@ -11,6 +11,7 @@ import { metaRouter } from './routes/meta.js';
 import { salariesRouter } from './routes/salaries.js';
 
 export interface AppOptions {
+  /** One origin, or several separated by commas. */
   corsOrigin: string;
   authPassword: string;
   authSecret: string;
@@ -24,7 +25,8 @@ const sha256 = (s: string) => createHash('sha256').update(s).digest();
 export function createApp(db: Knex, options: AppOptions) {
   const today = options.today ?? todayUtc;
   const app = express();
-  app.use(cors({ origin: options.corsOrigin }));
+  // CORS_ORIGIN may list several origins, comma-separated (local dev plus a deployed frontend).
+  app.use(cors({ origin: options.corsOrigin.split(',').map((o) => o.trim()).filter(Boolean) }));
   app.use(express.json());
 
   app.get('/api/health', (_req, res) => {

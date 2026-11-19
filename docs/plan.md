@@ -179,10 +179,13 @@ Pages and the question each answers:
 - [x] **Step 1:** Unit tests: `parseMajorToMinor("85000.50") === 8500050`, `"85,000" === 8500000`, `"1.005" === null`, `"abc" === null`; `formatMinor(8500050, "USD") === "$85,000.50"`. Run → FAIL. Implement. Run → PASS.
 - [x] **Step 2:** Build pages. Run app against seeded DB; walk all five questions in the browser. Check a11y with `chrome-devtools-mcp:a11y-debugging`.
 - [x] **Step 3:** `npm test` and `npm run build` pass. Commit `feat(ui): directory, profiles, salary changes and insights`. Run `superpowers:requesting-code-review`.
+### Task 9: Deployment (backend only)
 
+First dropped on 2026-11-19 (run locally), then partly revived the same day:
 
-
-Managed Postgres (Neon), API on Render, frontend on Vercel. Set `CORS_ORIGIN`, `VITE_API_URL`, `AUTH_*`. Run migrate + seed on the hosted DB. Commit `chore: deployment config`.
+- [x] Database on Neon: linked with `neon init` / `neon deploy`, migrated and seeded (`chore(db): link backend to Neon Postgres`).
+- [x] API on Render: `render.yaml` Blueprint (Singapore, next to the Neon region), build `npm ci && npm run build`, start `npm run migrate:prod && npm start`, health check `/api/health`. `CORS_ORIGIN` accepts a comma-separated list.
+- [ ] Frontend: not deployed. When it is, add its URL to `CORS_ORIGIN` and set `VITE_API_URL` to the Render URL.
 
 ### Task 10: Docs (done)
 

@@ -1,0 +1,32 @@
+# Render Blueprint for the backend API.
+# Create it in Render: New > Blueprint > pick this repository. Render asks for the values marked sync: false.
+services:
+  - type: web
+    name: acme-salaries-api
+    runtime: node
+    rootDir: backend
+    # Same region as the Neon database (ap-southeast-1), to keep query latency low.
+    region: singapore
+    plan: free
+    buildCommand: npm ci && npm run build
+    # Migrations are idempotent; running them at start keeps the schema in step on the free plan,
+    # which has no pre-deploy command. They use DATABASE_URL_UNPOOLED (direct connection).
+    startCommand: npm run migrate:prod && npm start
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit
+    buildFilter:
+      paths:
+        - backend/**
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: DATABASE_URL
+        sync: false # Neon pooled connection string
+      - key: DATABASE_URL_UNPOOLED
+        sync: false # Neon direct connection string (migrations)
+      - key: AUTH_PASSWORD
+        sync: false # shared HR password, at least 12 characters
+      - key: AUTH_SECRET
+        generateValue: true
+      - key: CORS_ORIGIN
+        value: http://localhost:5173 # add the deployed frontend URL here, comma-separated
