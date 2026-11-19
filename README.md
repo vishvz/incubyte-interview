@@ -4,7 +4,7 @@ A web app that replaces ACME's salary spreadsheets. The HR manager can find and 
 
 ![Overview page](docs/screenshots/overview.png)
 
-**Live:** app at https://acme-salaries-web.onrender.com, API at https://acme-salaries-api.onrender.com, database on Neon. Both run on Render's free plan; the API sleeps after 15 idle minutes, so the first sign-in after a pause can take up to a minute. Ask the author for the HR password.
+**Live:** app at https://acme-salaries-web.onrender.com, API at https://acme-salaries-api.onrender.com, database on Neon. Both run on Render's free plan; the API sleeps after 15 idle minutes, so the first sign-in after a pause can take up to a minute. Demo password: `acme-hr-demo-2026` (published on purpose so reviewers can sign in; all data is synthetic, see [security](docs/security.md)).
 
 ## What it answers
 
@@ -84,15 +84,23 @@ GitHub Actions runs each project's suite on every push that touches it (`.github
 
 ## Screenshots
 
-| Profile with pay band and history | Pay ranges by level |
-| --- | --- |
-| ![Employee profile](docs/screenshots/profile.png) | ![Pay ranges](docs/screenshots/pay-ranges.png) |
+Taken from the live app.
 
-![Outside band](docs/screenshots/outside-band.png)
+| Employee directory | Profile with pay band and history |
+| --- | --- |
+| ![Employee directory](docs/screenshots/employees.png) | ![Employee profile](docs/screenshots/profile.png) |
+
+| Pay ranges by level | Outside band |
+| --- | --- |
+| ![Pay ranges](docs/screenshots/pay-ranges.png) | ![Outside band](docs/screenshots/outside-band.png) |
+
+| Payroll by department | Overview |
+| --- | --- |
+| ![Payroll](docs/screenshots/payroll.png) | ![Overview](docs/screenshots/overview.png) |
 
 ## More detail
 
 - [Backend README](backend/README.md): API, data model, scripts
 - [Frontend README](frontend/README.md): pages, design, structure
-- [Architecture](docs/architecture.md), [trade-offs](docs/trade-offs.md), [performance](docs/performance.md)
+- [Architecture](docs/architecture.md), [trade-offs](docs/trade-offs.md), [performance](docs/performance.md), [security](docs/security.md)
 - [AI prompts](docs/ai/prompts.md) and [AI review log](docs/ai/review-log.md)

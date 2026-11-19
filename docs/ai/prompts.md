@@ -53,3 +53,9 @@ Result: a `render.yaml` Blueprint for the API (Singapore region next to Neon, mi
 > why dont we deploy frontend on it as well? can we?
 
 Result: the frontend became a Render static site in the same Blueprint. Render's `fromService` only exposes private hostnames, so the two public URLs are written into `render.yaml`. The production build was served locally on an allowed origin and logged in against the live API (wrong password, correct error) before pushing.
+
+## 9. Final audit
+
+> Perform a final audit of the existing project before submission to Incubyte. [...] Fix only genuine issues, preserve existing functionality and report changes with test results.
+
+Result: planned first (read-only evidence: CI runs, `npm audit`, git-history secret scan, live header and payload probes), then a small set of fixes with tests: API security headers, login throttling, 413 for oversized bodies, a plain 409, a CSP and other headers on the site, Postgres bound to localhost in Docker Compose. Findings are summarised in `docs/security.md`. The demo password stays public by the owner's choice.
