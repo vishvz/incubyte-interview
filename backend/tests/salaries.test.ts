@@ -80,6 +80,18 @@ describe('POST /api/employees/:id/salaries', () => {
     expect(res.status).toBe(409);
   });
 
+  it('makes the change recorded last current when two share an effective date', async () => {
+    const { id } = await insertEmployee(getTrx(), { hireDate: '2024-01-01', salaryMinor: 9_000_000 });
+    const post = (amountMinor: number) =>
+      api().post(`/api/employees/${id}/salaries`).set(authHeader)
+        .send({ amountMinor, effectiveDate: '2025-04-01', reason: 'adjustment' });
+    await post(9_500_000);
+    await post(9_400_000); // a same-day correction
+    const p = await profile(id);
+    expect(p.currentSalary.amountMinor).toBe(9_400_000);
+    expect(p.history.map((s: { amountMinor: number }) => s.amountMinor)).toEqual([9_400_000, 9_500_000, 9_000_000]);
+  });
+
   it('returns 404 for an unknown employee', async () => {
     const res = await api().post('/api/employees/999999/salaries').set(authHeader)
       .send({ amountMinor: 100, effectiveDate: '2025-01-01', reason: 'adjustment' });
