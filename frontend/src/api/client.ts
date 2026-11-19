@@ -17,6 +17,11 @@ export class ApiError extends Error {
     this.issues = issues;
   }
 
+  /** The error plus any issue messages, for an alert when no form field shows them. */
+  describe(): string {
+    return [this.message, ...this.issues.map((i) => (i.path.length ? `${i.path.join('.')}: ${i.message}` : i.message))].join('. ');
+  }
+
   /** Field errors keyed by the first path segment, for forms. */
   fieldErrors(): Record<string, string> {
     return Object.fromEntries(this.issues.map((i) => [String(i.path[0]), i.message]));

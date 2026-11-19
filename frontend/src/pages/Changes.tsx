@@ -62,6 +62,15 @@ export function Changes() {
                     </Table.Td>
                   </Table.Tr>
                 ))}
+                {query.data.items.length === 0 && (
+                  <Table.Tr>
+                    <Table.Td colSpan={6}>
+                      <Text c="dimmed" ta="center" py="lg">
+                        No salary changes yet. Record one from an employee's profile.
+                      </Text>
+                    </Table.Td>
+                  </Table.Tr>
+                )}
               </Table.Tbody>
             </Table>
           </Table.ScrollContainer>

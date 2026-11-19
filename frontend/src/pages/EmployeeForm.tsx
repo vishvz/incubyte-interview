@@ -60,11 +60,14 @@ function FormBody({ id, initial }: { id?: string; initial: Fields }) {
       queryClient.invalidateQueries({ queryKey: ['employees'] });
       queryClient.invalidateQueries({ queryKey: ['employee', String(saved.id)] });
       queryClient.invalidateQueries({ queryKey: ['insights'] });
+      queryClient.invalidateQueries({ queryKey: ['recent'] });
       navigate(`/employees/${saved.id}`);
     },
   });
 
   const errors = save.error instanceof ApiError ? save.error.fieldErrors() : {};
+  const FIELDS = ['firstName', 'lastName', 'email', 'jobTitle', 'department', 'level', 'country', 'hireDate', 'salaryMinor'];
+  const shownInFields = FIELDS.some((k) => k in errors);
   const currency = meta?.countries.find((c) => c.code === f.country)?.currency;
 
   return (
@@ -95,11 +98,13 @@ function FormBody({ id, initial }: { id?: string; initial: Fields }) {
           }}
         >
           <Stack>
-            {save.error && !Object.keys(errors).length && (
+            {save.error && !shownInFields && (
               <Alert color="red">
                 {save.error instanceof ApiError && save.error.status === 409
                   ? 'Another employee already uses this email address.'
-                  : save.error.message}
+                  : save.error instanceof ApiError
+                    ? save.error.describe()
+                    : save.error.message}
               </Alert>
             )}
             <SimpleGrid cols={{ base: 1, sm: 2 }}>

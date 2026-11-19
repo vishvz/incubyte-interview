@@ -231,6 +231,7 @@ function RecordChange({ employeeId, currency, hireDate }: { employeeId: number; 
     },
   });
   const fieldErrors = save.error instanceof ApiError ? save.error.fieldErrors() : {};
+  const shownInFields = ['amountMinor', 'effectiveDate'].some((k) => k in fieldErrors);
 
   return (
     <Paper withBorder p="lg">
@@ -279,7 +280,9 @@ function RecordChange({ employeeId, currency, hireDate }: { employeeId: number; 
             allowDeselect={false}
           />
           <Textarea label="Note (optional)" value={note} onChange={(ev) => setNote(ev.currentTarget.value)} maxLength={500} />
-          {save.error && !Object.keys(fieldErrors).length && <Alert color="red">{save.error.message}</Alert>}
+          {save.error && !shownInFields && (
+            <Alert color="red">{save.error instanceof ApiError ? save.error.describe() : save.error.message}</Alert>
+          )}
           {save.isSuccess && <Alert color="ledger">Salary change recorded.</Alert>}
           <Button type="submit" loading={save.isPending}>
             Record salary change

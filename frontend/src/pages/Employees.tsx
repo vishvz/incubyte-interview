@@ -1,4 +1,4 @@
-import { Alert, Badge, Button, Group, Pagination, Select, Table, Text, TextInput, Title, UnstyledButton } from '@mantine/core';
+import { Alert, Badge, Button, Group, Loader, Pagination, Select, Table, Text, TextInput, Title, UnstyledButton } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
@@ -7,6 +7,7 @@ import { apiFetch, qs } from '../api/client';
 import { paginationLabels } from '../lib/format';
 import type { EmployeeListItem, Page } from '../api/types';
 import { useMeta, useMoney } from '../currency';
+import { formatDate } from '../lib/format';
 
 const PAGE_SIZE = 25;
 type SortKey = 'name' | 'hire_date' | 'salary';
@@ -28,7 +29,7 @@ export function Employees() {
     status: params.get('status') ?? '',
     sort: (params.get('sort') ?? 'name') as SortKey,
     order: params.get('order') ?? 'asc',
-    page: Number(params.get('page') ?? 1),
+    page: Math.max(1, Math.floor(Number(params.get('page'))) || 1),
   };
 
   /** Updates URL filters; any filter change goes back to page 1. */
@@ -42,6 +43,11 @@ export function Employees() {
   useEffect(() => {
     if (q !== filters.q) update({ q });
   }, [q]);
+
+  // The URL changed from outside (nav link, browser Back): show its search text in the box.
+  useEffect(() => {
+    if (filters.q !== q) setSearch(filters.q);
+  }, [filters.q]);
 
   const query = useQuery({
     queryKey: ['employees', filters],
@@ -69,6 +75,9 @@ export function Employees() {
   const pages = data ? Math.max(1, Math.ceil(data.total / PAGE_SIZE)) : 1;
   const salaryNote =
     money.display === 'local' ? 'Salaries in local currency' : `Salaries converted to ${money.display}`;
+  // The API sorts salaries by USD value, which can look out of order when amounts are in local currencies.
+  const sortNote =
+    filters.sort === 'salary' && money.display === 'local' ? ' Sorted by salary converted to USD.' : '';
 
   return (
     <>
@@ -78,7 +87,7 @@ export function Employees() {
             Employees
           </Title>
           <Text c="dimmed" size="sm">
-            {data ? `${data.total.toLocaleString('en-US')} people. ` : ''}{salaryNote}.
+            {data ? `${data.total.toLocaleString('en-US')} people. ` : ''}{salaryNote}.{sortNote}
           </Text>
         </div>
         <Button component={Link} to="/employees/new">
@@ -136,6 +145,7 @@ export function Employees() {
       </Group>
 
       {query.error && <Alert color="red" mb="md">{query.error.message}</Alert>}
+      {query.isPending && <Loader mb="md" />}
 
       <Table.ScrollContainer minWidth={760}>
         <Table highlightOnHover verticalSpacing="xs" bg="white" withTableBorder>
@@ -172,7 +182,7 @@ export function Employees() {
                 <Table.Td>{e.department}</Table.Td>
                 <Table.Td>{e.level}</Table.Td>
                 <Table.Td>{e.country}</Table.Td>
-                <Table.Td className="num">{e.hireDate}</Table.Td>
+                <Table.Td className="num">{formatDate(e.hireDate)}</Table.Td>
                 <Table.Td ta="right" className="num">
                   {money.format(e.salary.amountMinor, e.salary.currency, { cents: false })}
                 </Table.Td>
