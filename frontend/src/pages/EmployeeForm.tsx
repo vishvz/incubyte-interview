@@ -1,14 +1,15 @@
-import { Alert, Anchor, Button, Group, Loader, Paper, Select, SimpleGrid, Stack, TextInput } from '@mantine/core';
+import { Alert, Anchor, Button, Group, Paper, Select, SimpleGrid, Stack, TextInput } from '@mantine/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { ApiError, apiFetch, patch, post } from '../api/client';
 import type { Employee, EmployeeProfile } from '../api/types';
 import { IconArrowLeft, IconCheck, IconPencil, IconUserPlus } from '@tabler/icons-react';
-import { PageHeader } from '../components/ui';
+import { focusFirstError, PageHeader, PageLoader } from '../components/ui';
 import { useMeta } from '../currency';
 import { todayIso } from '../lib/format';
 import { parseMajorToMinor } from '../lib/money';
+import { type FieldErrors, validateEmployee } from '../lib/validation';
 
 type Fields = Pick<Employee, 'firstName' | 'lastName' | 'email' | 'jobTitle' | 'department' | 'level' | 'country' | 'status'> & {
   hireDate: string;
@@ -30,7 +31,7 @@ export function EmployeeForm() {
     enabled: editing,
   });
 
-  if (editing && existing.isPending) return <Loader />;
+  if (editing && existing.isPending) return <PageLoader label="Loading employee" />;
   if (editing && existing.error) return <Alert color="red">{existing.error.message}</Alert>;
   return <FormBody id={id} initial={existing.data ? { ...EMPTY, ...existing.data } : EMPTY} />;
 }
@@ -41,8 +42,12 @@ function FormBody({ id, initial }: { id?: string; initial: Fields }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [f, setF] = useState<Fields>(initial);
-  const [salaryError, setSalaryError] = useState<string | null>(null);
-  const set = (k: keyof Fields) => (v: string | null) => setF((prev) => ({ ...prev, [k]: v ?? '' }));
+  const [clientErrors, setClientErrors] = useState<FieldErrors>({});
+  // Editing a field clears its error, so the message disappears as soon as the user fixes it.
+  const set = (k: keyof Fields) => (v: string | null) => {
+    setF((prev) => ({ ...prev, [k]: v ?? '' }));
+    setClientErrors(({ [k]: _cleared, ...rest }) => rest);
+  };
   const input = (k: keyof Fields) => ({
     value: f[k],
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => set(k)(e.currentTarget.value),
@@ -67,9 +72,11 @@ function FormBody({ id, initial }: { id?: string; initial: Fields }) {
     },
   });
 
-  const errors = save.error instanceof ApiError ? save.error.fieldErrors() : {};
+  const serverErrors = save.error instanceof ApiError ? save.error.fieldErrors() : {};
+  // The API names the salary field salaryMinor; the form calls it salary.
+  const errors: FieldErrors = { ...serverErrors, salary: serverErrors.salaryMinor, ...clientErrors };
   const FIELDS = ['firstName', 'lastName', 'email', 'jobTitle', 'department', 'level', 'country', 'hireDate', 'salaryMinor'];
-  const shownInFields = FIELDS.some((k) => k in errors);
+  const shownInFields = FIELDS.some((k) => k in serverErrors);
   const currency = meta?.countries.find((c) => c.code === f.country)?.currency;
 
   return (
@@ -90,13 +97,13 @@ function FormBody({ id, initial }: { id?: string; initial: Fields }) {
       </div>
       <Paper withBorder p="lg">
         <form
+          noValidate
           onSubmit={(e) => {
             e.preventDefault();
-            if (editing) return save.mutate(null);
-            const minor = parseMajorToMinor(f.salary);
-            if (minor === null || minor === 0) return setSalaryError('Enter an amount like 85000 or 85,000.50');
-            setSalaryError(null);
-            save.mutate(minor);
+            const found = validateEmployee(f, { editing, today: todayIso() });
+            setClientErrors(found);
+            if (Object.keys(found).length) return focusFirstError(e.currentTarget);
+            save.mutate(editing ? null : parseMajorToMinor(f.salary));
           }}
         >
           <Stack>
@@ -110,13 +117,13 @@ function FormBody({ id, initial }: { id?: string; initial: Fields }) {
               </Alert>
             )}
             <SimpleGrid cols={{ base: 1, sm: 2 }}>
-              <TextInput label="First name" required {...input('firstName')} error={errors.firstName} />
-              <TextInput label="Last name" required {...input('lastName')} error={errors.lastName} />
-              <TextInput label="Work email" type="email" required {...input('email')} error={errors.email} />
-              <TextInput label="Job title" required {...input('jobTitle')} error={errors.jobTitle} />
+              <TextInput label="First name" withAsterisk {...input('firstName')} error={errors.firstName} />
+              <TextInput label="Last name" withAsterisk {...input('lastName')} error={errors.lastName} />
+              <TextInput label="Work email" type="email" withAsterisk {...input('email')} error={errors.email} />
+              <TextInput label="Job title" withAsterisk {...input('jobTitle')} error={errors.jobTitle} />
               <Select
                 label="Department"
-                required
+                withAsterisk
                 data={meta?.departments ?? []}
                 value={f.department || null}
                 onChange={set('department')}
@@ -124,7 +131,7 @@ function FormBody({ id, initial }: { id?: string; initial: Fields }) {
               />
               <Select
                 label="Level"
-                required
+                withAsterisk
                 data={meta?.levels ?? []}
                 value={f.level || null}
                 onChange={set('level')}
@@ -145,7 +152,7 @@ function FormBody({ id, initial }: { id?: string; initial: Fields }) {
                 <>
                   <Select
                     label="Country"
-                    required
+                    withAsterisk
                     data={meta?.countries.map((c) => ({ value: c.code, label: `${c.name} (${c.currency})` })) ?? []}
                     value={f.country || null}
                     onChange={set('country')}
@@ -154,17 +161,17 @@ function FormBody({ id, initial }: { id?: string; initial: Fields }) {
                   <TextInput
                     label="Hire date"
                     type="date"
-                    required
+                    withAsterisk
                     max={todayIso()}
                     {...input('hireDate')}
                     error={errors.hireDate}
                   />
                   <TextInput
                     label={`Starting annual salary${currency ? ` (${currency})` : ''}`}
-                    required
+                    withAsterisk
                     inputMode="decimal"
                     {...input('salary')}
-                    error={salaryError ?? errors.salaryMinor}
+                    error={errors.salary}
                   />
                 </>
               )}

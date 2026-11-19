@@ -1,4 +1,4 @@
-import { Avatar, Badge, Group, Paper, Stack, Text, ThemeIcon, Title } from '@mantine/core';
+import { Avatar, Badge, Group, Loader, Pagination, Paper, Select, Stack, Text, ThemeIcon, Title } from '@mantine/core';
 import {
   IconArrowDownRight,
   IconArrowUpRight,
@@ -12,7 +12,7 @@ import {
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 import type { SalaryReason } from '../api/types';
-import { REASON_LABELS } from '../lib/format';
+import { paginationLabels, REASON_LABELS } from '../lib/format';
 
 /** Title row shared by every page: icon, title, one line of context, actions on the right. */
 export function PageHeader({
@@ -244,5 +244,84 @@ export function TableCard({
       <div className="table-card__body">{children}</div>
       {footer && <div className="table-card__foot">{footer}</div>}
     </Paper>
+  );
+}
+
+/** Centred loading state for a whole page or card, with a visible label for screen readers too. */
+export function PageLoader({ label = 'Loading', minHeight = '50vh' }: { label?: string; minHeight?: string | number }) {
+  return (
+    <Stack align="center" justify="center" gap="sm" mih={minHeight} role="status" aria-live="polite">
+      <Loader />
+      <Text size="sm" c="dimmed">
+        {label}
+      </Text>
+    </Stack>
+  );
+}
+
+/** After a failed submit, move focus to the first field marked invalid so keyboard and screen-reader users land on it. */
+export function focusFirstError(form: HTMLFormElement) {
+  requestAnimationFrame(() => form.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus());
+}
+
+const PAGE_SIZES = ['10', '25', '50'];
+
+/**
+ * Table footer: "Showing 1–10 of 9,582 employees", rows per page and page links.
+ * Keeps long lists to a short, scannable page instead of one endless card.
+ */
+export function TablePager({
+  total,
+  page,
+  pageSize,
+  noun,
+  onPage,
+  onPageSize,
+}: {
+  total: number;
+  page: number;
+  pageSize: number;
+  noun: string;
+  onPage: (page: number) => void;
+  onPageSize: (size: number) => void;
+}) {
+  const pages = Math.max(1, Math.ceil(total / pageSize));
+  const from = total === 0 ? 0 : (page - 1) * pageSize + 1;
+  const to = Math.min(page * pageSize, total);
+  const sizeId = `page-size-${noun.replace(/[^a-z0-9]+/gi, '-')}`;
+  return (
+    <>
+      <Group gap="md" wrap="wrap">
+        <Text size="sm" c="dimmed" className="num">
+          Showing {from.toLocaleString('en-US')}–{to.toLocaleString('en-US')} of {total.toLocaleString('en-US')} {noun}
+        </Text>
+        <Group gap={6} wrap="nowrap">
+          <Text size="sm" c="dimmed" component="label" htmlFor={sizeId}>
+            Rows per page
+          </Text>
+          <Select
+            id={sizeId}
+            size="xs"
+            w={76}
+            data={PAGE_SIZES}
+            value={String(pageSize)}
+            onChange={(v) => v && onPageSize(Number(v))}
+            allowDeselect={false}
+            comboboxProps={{ withinPortal: true }}
+          />
+        </Group>
+      </Group>
+      {pages > 1 && (
+        <Pagination
+          size="sm"
+          total={pages}
+          value={page}
+          onChange={onPage}
+          getControlProps={paginationLabels}
+          boundaries={1}
+          siblings={1}
+        />
+      )}
+    </>
   );
 }

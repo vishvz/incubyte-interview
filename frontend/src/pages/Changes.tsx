@@ -1,34 +1,68 @@
-import { Alert, Group, Loader, Stack, Table, Text } from '@mantine/core';
+import { Alert, SegmentedControl, Stack, Table, Text } from '@mantine/core';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
 import { apiFetch } from '../api/client';
 import type { RecentChange } from '../api/types';
 import { IconHistory } from '@tabler/icons-react';
-import { ChangeDelta, EmptyState, PageHeader, PersonCell, ReasonBadge, TableCard } from '../components/ui';
+import { ChangeDelta, EmptyState, PageHeader, PageLoader, PersonCell, ReasonBadge, TableCard, TablePager } from '../components/ui';
 import { useMoney } from '../currency';
 import { formatDate } from '../lib/format';
 
 export function Changes() {
   const money = useMoney();
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  // Pay changes first: hires dominate the raw feed and hide the question "whose pay changed, and why?".
+  const [show, setShow] = useState<'changes' | 'all'>('changes');
   const query = useQuery({
-    queryKey: ['recent'],
-    queryFn: () => apiFetch<{ items: RecentChange[] }>('/api/salary-changes/recent?limit=50'),
+    queryKey: ['recent', 100, show],
+    // The API returns at most the 100 latest rows; the page shows them 10 (or 25, 50) at a time.
+    queryFn: () =>
+      apiFetch<{ items: RecentChange[] }>(`/api/salary-changes/recent?limit=100&excludeHires=${show === 'changes'}`),
   });
+  const items = query.data?.items ?? [];
+  const visible = items.slice((page - 1) * pageSize, page * pageSize);
 
   return (
     <Stack>
       <PageHeader
         icon={IconHistory}
         title="Recent changes"
-        description="The 50 latest salary changes by effective date, including new hires."
+        description="The latest salary changes by effective date, with the amount each one replaced."
       />
       {query.error && <Alert color="red">{query.error.message}</Alert>}
-      <TableCard>
-        {query.isPending && (
-          <Group justify="center" py="xl">
-            <Loader />
-          </Group>
-        )}
+      <TableCard
+        toolbar={
+          <SegmentedControl
+            value={show}
+            onChange={(v) => {
+              setShow(v as 'changes' | 'all');
+              setPage(1);
+            }}
+            data={[
+              { value: 'changes', label: 'Pay changes' },
+              { value: 'all', label: 'Including new hires' },
+            ]}
+          />
+        }
+        footer={
+          items.length > 0 ? (
+            <TablePager
+              total={items.length}
+              page={page}
+              pageSize={pageSize}
+              noun={show === 'changes' ? 'latest pay changes' : 'latest changes'}
+              onPage={setPage}
+              onPageSize={(size) => {
+                setPageSize(size);
+                setPage(1);
+              }}
+            />
+          ) : undefined
+        }
+      >
+        {query.isPending && <PageLoader label="Loading changes" minHeight={320} />}
         {query.data && (
             <Table verticalSpacing="sm">
               <Table.Thead>
@@ -42,7 +76,7 @@ export function Changes() {
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
-                {query.data.items.map((c) => (
+                {visible.map((c) => (
                   <Table.Tr key={c.id}>
                     <Table.Td className="num" visibleFrom="sm">{formatDate(c.effectiveDate)}</Table.Td>
                     <Table.Td>

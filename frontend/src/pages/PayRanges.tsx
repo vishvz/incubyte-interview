@@ -1,11 +1,11 @@
-import { Alert, Group, Loader, SegmentedControl, Select, Stack, Table, Text } from '@mantine/core';
+import { Alert, Group, SegmentedControl, Select, Stack, Table, Text } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { apiFetch, qs } from '../api/client';
 import type { Band, CountryLevelRow, DepartmentRow, Distribution, Quartiles } from '../api/types';
 import { paddedDomain, RangeBar } from '../components/RangeBar';
 import { IconBuilding, IconChartBar, IconStairs, IconWorld } from '@tabler/icons-react';
-import { PageHeader, TableCard } from '../components/ui';
+import { PageHeader, TableCard, PageLoader } from '../components/ui';
 import { useMeta, useMoney } from '../currency';
 import { formatDate } from '../lib/format';
 import { formatMinor } from '../lib/money';
@@ -143,11 +143,7 @@ function ByLevel() {
         </Stack>
       }
     >
-      {query.isPending && (
-        <Group justify="center" py="xl">
-          <Loader />
-        </Group>
-      )}
+      {query.isPending && <PageLoader label="Loading" minHeight={280} />}
       {query.error && <Alert color="red" m="md">{query.error.message}</Alert>}
       {query.data && <RangeTable rows={query.data.rows} name="Level" rowKey={(r) => r.level} withBand />}
     </TableCard>
@@ -175,11 +171,7 @@ function ByDepartment() {
         </Stack>
       }
     >
-      {query.isPending && (
-        <Group justify="center" py="xl">
-          <Loader />
-        </Group>
-      )}
+      {query.isPending && <PageLoader label="Loading" minHeight={280} />}
       {query.error && <Alert color="red" m="md">{query.error.message}</Alert>}
       {query.data && <RangeTable rows={query.data.rows} name="Department" rowKey={(r) => r.department} withBand={false} />}
     </TableCard>

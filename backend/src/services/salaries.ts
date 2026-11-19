@@ -30,8 +30,8 @@ export async function recordSalaryChange(db: Knex, employeeId: number, change: S
   return toSalary(row);
 }
 
-export async function recentChanges(db: Knex, limit: number) {
-  const rows = await repo.recentChanges(db, limit);
+export async function recentChanges(db: Knex, limit: number, { excludeHires = false } = {}) {
+  const rows = await repo.recentChanges(db, limit, excludeHires);
   return {
     items: rows.map((r) => ({
       ...toSalary(r),

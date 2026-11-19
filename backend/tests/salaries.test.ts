@@ -122,6 +122,18 @@ describe('GET /api/salary-changes/recent', () => {
     expect(res.body.items[1]).toMatchObject({ reason: 'hire', previousMinor: null, changePct: null });
   });
 
+  it('can leave out new hires to show pay changes only', async () => {
+    const { id } = await insertEmployee(getTrx(), { hireDate: '2024-01-01', salaryMinor: 10_000_000 });
+    await insertEmployee(getTrx(), { hireDate: '2026-11-01' }); // a newer hire
+    await api().post(`/api/employees/${id}/salaries`).set(authHeader)
+      .send({ amountMinor: 11_000_000, effectiveDate: '2025-06-01', reason: 'promotion' });
+
+    const res = await api().get('/api/salary-changes/recent?limit=10&excludeHires=true').set(authHeader);
+    expect(res.status).toBe(200);
+    expect(res.body.items.map((c: { reason: string }) => c.reason)).toEqual(['promotion']);
+    expect(res.body.items[0].previousMinor).toBe(10_000_000);
+  });
+
   it('rejects a limit above 100', async () => {
     const res = await api().get('/api/salary-changes/recent?limit=101').set(authHeader);
     expect(res.status).toBe(400);

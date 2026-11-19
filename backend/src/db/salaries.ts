@@ -1,7 +1,7 @@
 import type { Knex } from 'knex';
 
 /** Latest salary changes, each with the amount it replaced (by effective date). */
-export const recentChanges = (db: Knex, limit: number) =>
+export const recentChanges = (db: Knex, limit: number, excludeHires = false) =>
   db
     .select(
       's.*',
@@ -24,4 +24,6 @@ export const recentChanges = (db: Knex, limit: number) =>
       { column: 's.effective_date', order: 'desc' },
       { column: 's.id', order: 'desc' },
     ])
+    // Constant SQL either way; no user input reaches it.
+    .whereRaw(excludeHires ? "s.reason <> 'hire'" : 'true')
     .limit(limit);

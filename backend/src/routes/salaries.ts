@@ -12,7 +12,11 @@ export function salariesRouter(db: Knex, { today }: { today: () => string }) {
     reason: z.enum(['promotion', 'annual_review', 'adjustment']),
     note: z.string().trim().max(500).optional(),
   });
-  const recentQuery = z.object({ limit: z.coerce.number().int().min(1).max(100).default(20) });
+  const recentQuery = z.object({
+    limit: z.coerce.number().int().min(1).max(100).default(20),
+    // 'true' leaves out hire rows, so the feed shows pay changes only.
+    excludeHires: z.enum(['true', 'false']).default('false').transform((v) => v === 'true'),
+  });
 
   const router = Router();
 
@@ -22,7 +26,8 @@ export function salariesRouter(db: Knex, { today }: { today: () => string }) {
   });
 
   router.get('/salary-changes/recent', async (req, res) => {
-    res.json(await service.recentChanges(db, recentQuery.parse(req.query).limit));
+    const { limit, excludeHires } = recentQuery.parse(req.query);
+    res.json(await service.recentChanges(db, limit, { excludeHires }));
   });
 
   return router;

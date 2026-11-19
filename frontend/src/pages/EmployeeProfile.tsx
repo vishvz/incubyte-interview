@@ -1,4 +1,4 @@
-import { Alert, Anchor, Avatar, Badge, Button, Grid, Group, Loader, Paper, Select, SimpleGrid, Stack, Table, Text, Textarea, TextInput, Title } from '@mantine/core';
+import { Alert, Anchor, Avatar, Badge, Button, Grid, Group, Paper, Select, SimpleGrid, Stack, Table, Text, Textarea, TextInput, Title } from '@mantine/core';
 import {
   IconArrowDownRight,
   IconArrowLeft,
@@ -22,7 +22,8 @@ import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YA
 import { ApiError, apiFetch, post } from '../api/client';
 import type { EmployeeProfile as Profile, Salary, SalaryReason } from '../api/types';
 import { BandGauge } from '../components/BandGauge';
-import { ChangeDelta, ReasonBadge } from '../components/ui';
+import { ChangeDelta, focusFirstError, PageLoader, ReasonBadge } from '../components/ui';
+import { type FieldErrors, validateSalaryChange } from '../lib/validation';
 import { useMoney } from '../currency';
 import { formatDate, REASON_LABELS, todayIso } from '../lib/format';
 import { formatMinor, parseMajorToMinor } from '../lib/money';
@@ -34,7 +35,7 @@ export function EmployeeProfile() {
   const money = useMoney();
   const query = useQuery({ queryKey: ['employee', id], queryFn: () => apiFetch<Profile>(`/api/employees/${id}`) });
 
-  if (query.isPending) return <Loader />;
+  if (query.isPending) return <PageLoader label="Loading employee" />;
   if (query.error) {
     const missing = query.error instanceof ApiError && (query.error.status === 404 || query.error.status === 400);
     return (
@@ -253,7 +254,8 @@ function RecordChange({ employeeId, currency, hireDate }: { employeeId: number; 
   const [date, setDate] = useState(todayIso());
   const [reason, setReason] = useState<SalaryReason>('annual_review');
   const [note, setNote] = useState('');
-  const [localError, setLocalError] = useState<string | null>(null);
+  const [clientErrors, setClientErrors] = useState<FieldErrors>({});
+  const clear = (k: string) => setClientErrors(({ [k]: _cleared, ...rest }) => rest);
 
   const save = useMutation({
     mutationFn: (amountMinor: number) =>
@@ -269,19 +271,19 @@ function RecordChange({ employeeId, currency, hireDate }: { employeeId: number; 
   });
   const fieldErrors = save.error instanceof ApiError ? save.error.fieldErrors() : {};
   const shownInFields = ['amountMinor', 'effectiveDate'].some((k) => k in fieldErrors);
+  const amountError = clientErrors.amount ?? fieldErrors.amountMinor;
+  const dateError = clientErrors.effectiveDate ?? fieldErrors.effectiveDate;
 
   return (
     <Paper withBorder p="lg">
       <form
+        noValidate
         onSubmit={(ev) => {
           ev.preventDefault();
-          const minor = parseMajorToMinor(amount);
-          if (minor === null || minor === 0) {
-            setLocalError('Enter an amount like 85000 or 85,000.50');
-            return;
-          }
-          setLocalError(null);
-          save.mutate(minor);
+          const found = validateSalaryChange({ amount, effectiveDate: date, hireDate, today: todayIso() });
+          setClientErrors(found);
+          if (Object.keys(found).length) return focusFirstError(ev.currentTarget);
+          save.mutate(parseMajorToMinor(amount)!);
         }}
       >
         <Stack>
@@ -294,10 +296,14 @@ function RecordChange({ employeeId, currency, hireDate }: { employeeId: number; 
           <TextInput
             label={`New annual salary (${currency})`}
             value={amount}
-            onChange={(ev) => setAmount(ev.currentTarget.value)}
+            onChange={(ev) => {
+              setAmount(ev.currentTarget.value);
+              clear('amount');
+            }}
             inputMode="decimal"
-            error={localError ?? fieldErrors.amountMinor}
-            required
+            placeholder="e.g. 85,000.50"
+            error={amountError}
+            withAsterisk
           />
           <TextInput
             type="date"
@@ -305,9 +311,12 @@ function RecordChange({ employeeId, currency, hireDate }: { employeeId: number; 
             value={date}
             min={hireDate}
             max={todayIso()}
-            onChange={(ev) => setDate(ev.currentTarget.value)}
-            error={fieldErrors.effectiveDate}
-            required
+            onChange={(ev) => {
+              setDate(ev.currentTarget.value);
+              clear('effectiveDate');
+            }}
+            error={dateError}
+            withAsterisk
           />
           <Select
             label="Reason"

@@ -1,16 +1,14 @@
-import { Alert, Group, Loader, Pagination, SegmentedControl, Select, SimpleGrid, Stack, Table, Text } from '@mantine/core';
+import { Alert, Group, SegmentedControl, Select, SimpleGrid, Stack, Table, Text } from '@mantine/core';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { apiFetch, qs } from '../api/client';
-import { paginationLabels } from '../lib/format';
 import type { BandCheck } from '../api/types';
 import { paddedDomain, RangeBar } from '../components/RangeBar';
 import { IconArrowDownRight, IconArrowUpRight, IconCircleCheck, IconScale } from '@tabler/icons-react';
-import { EmptyState, PageHeader, PersonCell, StatTile, TableCard } from '../components/ui';
+import { EmptyState, PageHeader, PageLoader, PersonCell, StatTile, TableCard, TablePager } from '../components/ui';
 import { useMeta, useMoney } from '../currency';
 
-const PAGE_SIZE = 25;
 
 export function OutsideBand() {
   const { data: meta } = useMeta();
@@ -20,11 +18,12 @@ export function OutsideBand() {
   const [country, setCountry] = useState<string | null>(null);
   const [level, setLevel] = useState<string | null>(null);
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const query = useQuery({
-    queryKey: ['insights', 'band-check', position, country, level, page],
+    queryKey: ['insights', 'band-check', position, country, level, page, pageSize],
     queryFn: () =>
-      apiFetch<BandCheck>(`/api/insights/band-check${qs({ position, country, level, page, pageSize: PAGE_SIZE })}`),
+      apiFetch<BandCheck>(`/api/insights/band-check${qs({ position, country, level, page, pageSize })}`),
     placeholderData: keepPreviousData,
   });
   const data = query.data;
@@ -85,22 +84,21 @@ export function OutsideBand() {
         }
         footer={
           data && data.total > 0 ? (
-            <>
-              <Text size="sm" c="dimmed" className="num">
-                {data.total.toLocaleString('en-US')} people {position} band
-              </Text>
-              {data.total > PAGE_SIZE && (
-                <Pagination size="sm" getControlProps={paginationLabels} total={Math.ceil(data.total / PAGE_SIZE)} value={page} onChange={setPage} />
-              )}
-            </>
+            <TablePager
+              total={data.total}
+              page={page}
+              pageSize={pageSize}
+              noun={`people ${position} band`}
+              onPage={setPage}
+              onPageSize={(size) => {
+                setPageSize(size);
+                setPage(1);
+              }}
+            />
           ) : undefined
         }
       >
-        {query.isPending && (
-          <Group justify="center" py="xl">
-            <Loader />
-          </Group>
-        )}
+        {query.isPending && <PageLoader label="Loading" minHeight={320} />}
         {data && (
           <Table verticalSpacing="sm" highlightOnHover>
             <Table.Thead>

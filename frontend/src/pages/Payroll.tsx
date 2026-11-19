@@ -1,9 +1,9 @@
-import { Alert, Group, Loader, Stack, Table } from '@mantine/core';
+import { Alert, Stack, Table } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
 import { apiFetch, qs } from '../api/client';
 import type { Payroll as PayrollData } from '../api/types';
 import { IconCoins } from '@tabler/icons-react';
-import { PageHeader, TableCard } from '../components/ui';
+import { PageHeader, TableCard, PageLoader } from '../components/ui';
 import { useMoney } from '../currency';
 import { formatDate } from '../lib/format';
 import { formatMinor } from '../lib/money';
@@ -28,11 +28,7 @@ export function Payroll() {
       />
       {query.error && <Alert color="red">{query.error.message}</Alert>}
       <TableCard>
-        {query.isPending && (
-          <Group justify="center" py="xl">
-            <Loader />
-          </Group>
-        )}
+        {query.isPending && <PageLoader label="Loading" minHeight={280} />}
         {data && (
             <Table verticalSpacing="sm">
               <Table.Thead>

@@ -59,3 +59,7 @@ Result: the frontend became a Render static site in the same Blueprint. Render's
 > Perform a final audit of the existing project before submission to Incubyte. [...] Fix only genuine issues, preserve existing functionality and report changes with test results.
 
 Result: planned first (read-only evidence: CI runs, `npm audit`, git-history secret scan, live header and payload probes), then a small set of fixes with tests: API security headers, login throttling, 413 for oversized bodies, a plain 409, a CSP and other headers on the site, Postgres bound to localhost in Docker Compose. Findings are summarised in `docs/security.md`. The demo password stays public by the owner's choice.
+
+> there are no proper accessibility on buttons (no pointers), not proper validation (current one is default validation). Recent changes > its whole one container! itll keep going on. Same happening with all tables. think on UX perspective as well. Loader is spinning in corner instead of center.
+
+Result: inline form validation (tested rules, focus on the first error), paged tables with a rows-per-page choice, centred loaders, pointer cursors, and a "Pay changes" view of the recent feed so promotions and raises are not buried under new hires.

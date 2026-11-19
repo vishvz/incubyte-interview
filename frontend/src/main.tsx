@@ -20,6 +20,8 @@ const theme = createTheme({
   primaryShade: 8,
   colors: { ledger },
   defaultRadius: 'sm',
+  // Checkboxes, switches, segmented controls and similar show a pointer, like links and buttons.
+  cursorType: 'pointer',
 });
 
 const queryClient = new QueryClient({

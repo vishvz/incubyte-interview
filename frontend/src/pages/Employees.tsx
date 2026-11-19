@@ -1,17 +1,16 @@
-import { Alert, Badge, Button, Group, Loader, Pagination, Select, Table, Text, TextInput, UnstyledButton, type MantineBreakpoint } from '@mantine/core';
+import { Alert, Badge, Button, Select, Table, TextInput, UnstyledButton, type MantineBreakpoint } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
 import { apiFetch, qs } from '../api/client';
-import { paginationLabels } from '../lib/format';
 import type { EmployeeListItem, Page } from '../api/types';
 import { IconArrowsSort, IconPlus, IconSearch, IconSortAscending, IconSortDescending, IconUsers } from '@tabler/icons-react';
-import { EmptyState, PageHeader, PersonCell, TableCard } from '../components/ui';
+import { EmptyState, PageHeader, PageLoader, PersonCell, TableCard, TablePager } from '../components/ui';
 import { useMeta, useMoney } from '../currency';
 import { formatDate } from '../lib/format';
 
-const PAGE_SIZE = 25;
+const PAGE_SIZES = [10, 25, 50];
 type SortKey = 'name' | 'hire_date' | 'salary';
 
 export function Employees() {
@@ -32,6 +31,7 @@ export function Employees() {
     sort: (params.get('sort') ?? 'name') as SortKey,
     order: params.get('order') ?? 'asc',
     page: Math.max(1, Math.floor(Number(params.get('page'))) || 1),
+    pageSize: PAGE_SIZES.includes(Number(params.get('size'))) ? Number(params.get('size')) : 10,
   };
 
   /** Updates URL filters; any filter change goes back to page 1. */
@@ -53,7 +53,7 @@ export function Employees() {
 
   const query = useQuery({
     queryKey: ['employees', filters],
-    queryFn: () => apiFetch<Page<EmployeeListItem>>(`/api/employees${qs({ ...filters, pageSize: PAGE_SIZE })}`),
+    queryFn: () => apiFetch<Page<EmployeeListItem>>(`/api/employees${qs(filters)}`),
     placeholderData: keepPreviousData,
   });
 
@@ -80,7 +80,6 @@ export function Employees() {
   };
 
   const data = query.data;
-  const pages = data ? Math.max(1, Math.ceil(data.total / PAGE_SIZE)) : 1;
   const salaryNote =
     money.display === 'local' ? 'Salaries in local currency' : `Salaries converted to ${money.display}`;
   // The API sorts salaries by USD value, which can look out of order when amounts are in local currencies.
@@ -151,30 +150,18 @@ export function Employees() {
         }
         footer={
           data && data.total > 0 ? (
-            <>
-              <Text size="sm" c="dimmed" className="num">
-                Showing {((filters.page - 1) * PAGE_SIZE + 1).toLocaleString('en-US')}–
-                {Math.min(filters.page * PAGE_SIZE, data.total).toLocaleString('en-US')} of{' '}
-                {data.total.toLocaleString('en-US')}
-              </Text>
-              {pages > 1 && (
-                <Pagination
-                  size="sm"
-                  getControlProps={paginationLabels}
-                  total={pages}
-                  value={filters.page}
-                  onChange={(p) => update({ page: String(p) })}
-                />
-              )}
-            </>
+            <TablePager
+              total={data.total}
+              page={filters.page}
+              pageSize={filters.pageSize}
+              noun="employees"
+              onPage={(p) => update({ page: String(p) })}
+              onPageSize={(size) => update({ size: String(size) })}
+            />
           ) : undefined
         }
       >
-        {query.isPending && (
-          <Group justify="center" py="xl">
-            <Loader />
-          </Group>
-        )}
+        {query.isPending && <PageLoader label="Loading employees" minHeight={320} />}
         {data && (
           <Table highlightOnHover verticalSpacing="sm">
             <Table.Thead>

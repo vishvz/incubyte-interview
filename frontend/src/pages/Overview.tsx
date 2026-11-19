@@ -26,8 +26,9 @@ export function Overview() {
     queryFn: () => apiFetch<BandCheck>('/api/insights/band-check?position=below&pageSize=1'),
   });
   const recent = useQuery({
-    queryKey: ['recent', 6],
-    queryFn: () => apiFetch<{ items: RecentChange[] }>('/api/salary-changes/recent?limit=6'),
+    queryKey: ['recent', 6, 'changes'],
+    // Pay changes only: new hires would otherwise fill the panel.
+    queryFn: () => apiFetch<{ items: RecentChange[] }>('/api/salary-changes/recent?limit=6&excludeHires=true'),
   });
 
   const headcount = payroll.data?.rows.reduce((n, r) => n + r.headcount, 0);

@@ -14,6 +14,7 @@ const POINTS = [
 
 export function Login() {
   const [password, setPassword] = useState('');
+  const [missing, setMissing] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const login = useMutation({
@@ -58,8 +59,10 @@ export function Login() {
 
       <main className="login__form">
         <form
+          noValidate
           onSubmit={(e) => {
             e.preventDefault();
+            if (!password) return setMissing(true);
             login.mutate();
           }}
           style={{ width: '100%', maxWidth: 360 }}
@@ -78,8 +81,12 @@ export function Login() {
               label="Password"
               leftSection={<IconLock size={16} />}
               value={password}
-              onChange={(e) => setPassword(e.currentTarget.value)}
-              required
+              onChange={(e) => {
+                setPassword(e.currentTarget.value);
+                setMissing(false);
+              }}
+              error={missing ? 'Enter the HR password' : undefined}
+              withAsterisk
               autoFocus
               size="md"
             />
