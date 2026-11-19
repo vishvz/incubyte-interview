@@ -1,0 +1,145 @@
+/*
+ * Design notes
+ * A quiet tool for checking pay, built for an HR manager who lives in spreadsheets: dense tables,
+ * tabular figures and very little chrome. The one memorable element is the pay band range bar
+ * (band, P25-P75 box, median tick, employee marker), repeated wherever pay is compared.
+ * Chart colors were checked with the dataviz palette validator (lightness, chroma, colour-blind separation, contrast).
+ * Below and above are never shown by colour alone: they always come with a text label.
+ */
+:root {
+  --ink: #1d2a33;
+  --ink-muted: #5b6b75;
+  --surface: #ffffff;
+  --canvas: #f2f5f4;
+  --rule: #dfe5e3;
+  --band: #dcebe4;
+  --band-edge: #a9c9bb;
+  --quartile: #0e9472;
+  --median: #1d2a33;
+  --below: #b7791f;
+  --above: #3b5bdb;
+  /* Text versions of the status colours, dark enough for 4.5:1 on white and the canvas. */
+  --below-text: #85540f;
+  --above-text: #2f4ac0;
+}
+
+/* Mantine "dimmed" text, darkened from #868e96 to pass 4.5:1 contrast. Same selector as Mantine's. */
+:root[data-mantine-color-scheme='light'] {
+  --mantine-color-dimmed: #56656f;
+}
+
+body {
+  background: var(--canvas);
+  color: var(--ink);
+  font-feature-settings: 'tnum' 1;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.clickable-row {
+  cursor: pointer;
+}
+
+.clickable-row:hover {
+  background: var(--canvas);
+}
+
+/* Pay band range bar */
+.range {
+  position: relative;
+  height: 22px;
+  min-width: 160px;
+}
+
+.range__track {
+  position: absolute;
+  inset: 10px 0;
+  height: 2px;
+  background: var(--rule);
+}
+
+.range__band {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  background: var(--band);
+  border-left: 1px solid var(--band-edge);
+  border-right: 1px solid var(--band-edge);
+}
+
+.range__mid {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  width: 1px;
+  background: var(--band-edge);
+}
+
+.range__box {
+  position: absolute;
+  top: 7px;
+  bottom: 7px;
+  background: var(--quartile);
+  border-radius: 4px;
+}
+
+.range__median {
+  position: absolute;
+  top: 1px;
+  bottom: 1px;
+  width: 3px;
+  margin-left: -1.5px;
+  background: var(--median);
+  border-radius: 2px;
+  box-shadow: 0 0 0 2px var(--surface);
+}
+
+.range__marker {
+  position: absolute;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: 50%;
+  background: var(--ink);
+  box-shadow: 0 0 0 2px var(--surface);
+}
+
+.range__marker[data-position='below'] {
+  background: var(--below);
+}
+
+.range__marker[data-position='above'] {
+  background: var(--above);
+}
+
+.range__ticks {
+  position: relative;
+  height: 18px;
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+
+.range__ticks span {
+  position: absolute;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.position-below {
+  color: var(--below-text);
+}
+
+.position-above {
+  color: var(--above-text);
+}
+
+.bar {
+  height: 14px;
+  background: var(--quartile);
+  border-radius: 0 4px 4px 0;
+}

@@ -161,7 +161,7 @@ Generation rules: country weights US 40%, IN 25%, GB 15%, DE 12%, CA 8%. Salary 
 
 Use `frontend-design:frontend-design` for visual direction and `dataviz` for charts and stat tiles before writing UI code.
 
-**Files:** `frontend/src/api/{client.ts,types.ts}`, `frontend/src/lib/money.ts`, `frontend/src/pages/{Login,Employees,EmployeeProfile,EmployeeForm,Insights,Changes}.tsx`, `frontend/src/currency.tsx` (display-currency context), `frontend/src/App.tsx`, `frontend/.env.example` (`VITE_API_URL=http://localhost:4000`)
+**Files:** `frontend/src/api/{client.ts,types.ts}`, `frontend/src/lib/money.ts`, `frontend/src/pages/{Login,Employees,EmployeeProfile,EmployeeForm,PayRanges,OutsideBand,Payroll,Changes}.tsx`, `frontend/src/components/RangeBar.tsx`, `frontend/src/currency.tsx` (display-currency context), `frontend/src/App.tsx`, `frontend/.env.example` (`VITE_API_URL=http://localhost:4000`)
 
 **Interfaces — Produces (code):**
 - `parseMajorToMinor(input: string): number | null` — string-based, strips thousands separators, max 2 decimals, `null` on invalid
@@ -172,13 +172,13 @@ Pages and the question each answers:
 - `/employees` — directory: search box (debounced), filters, sortable columns, server pagination (Q1)
 - `/employees/:id` — profile, current salary, history timeline chart + table, "Record salary change" form (Q1, Q5)
 - `/employees/new`, `/employees/:id/edit` — form with field errors from API `issues`
-- `/insights` — tabs: distribution (P25/median/P75 range chart by level per country, and by department), band check list, payroll by department with total (Q2, Q3, Q4)
+- `/pay-ranges` (Q2), `/outside-band` (Q3) and `/payroll` (Q4): separate pages instead of tabs, so each answer has its own link
 - `/changes` — recent changes feed (Q5)
 - Global display-currency selector (`local` / USD / other FX currencies); converted figures show "rates as of {date}".
 
-- [ ] **Step 1:** Unit tests: `parseMajorToMinor("85000.50") === 8500050`, `"85,000" === 8500000`, `"1.005" === null`, `"abc" === null`; `formatMinor(8500050, "USD") === "$85,000.50"`. Run → FAIL. Implement. Run → PASS.
-- [ ] **Step 2:** Build pages. Run app against seeded DB; walk all five questions in the browser. Check a11y with `chrome-devtools-mcp:a11y-debugging`.
-- [ ] **Step 3:** `npm test` and `npm run build` pass. Commit `feat(ui): directory, profiles, salary changes and insights`. Run `superpowers:requesting-code-review`.
+- [x] **Step 1:** Unit tests: `parseMajorToMinor("85000.50") === 8500050`, `"85,000" === 8500000`, `"1.005" === null`, `"abc" === null`; `formatMinor(8500050, "USD") === "$85,000.50"`. Run → FAIL. Implement. Run → PASS.
+- [x] **Step 2:** Build pages. Run app against seeded DB; walk all five questions in the browser. Check a11y with `chrome-devtools-mcp:a11y-debugging`.
+- [x] **Step 3:** `npm test` and `npm run build` pass. Commit `feat(ui): directory, profiles, salary changes and insights`. Run `superpowers:requesting-code-review`.
 
 ### Task 9: Deployment (later session)
 
