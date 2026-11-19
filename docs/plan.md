@@ -118,15 +118,15 @@ Generation rules: country weights US 40%, IN 25%, GB 15%, DE 12%, CA 8%. Salary 
 - `GET /api/meta` → `{ countries: {code,name,currency}[], departments, levels, fxRates: {currency, rateToUsd, asOf}[] }`
 - `GET /api/employees?q&country&department&level&status&sort=name|hire_date|salary&order=asc|desc&page=1&pageSize=25` → `{ items: EmployeeListItem[], total, page, pageSize }`. `EmployeeListItem = { id, employeeCode, firstName, lastName, jobTitle, department, level, country, status, salary: { amountMinor, currency, usdMinor } }`. `q` matches name, code or email, case-insensitive, `%`/`_` escaped. Sort by `salary` uses USD value.
 - `GET /api/employees/:id` → employee + `currentSalary` + `history` (newest first). `404` if missing, `400` if id not a positive integer.
-- `POST /api/employees` body = employee fields + `{ salaryMinor, effectiveDate }` → `201` with employee; creates `hire` salary in same transaction. Duplicate email → `409`.
+- `POST /api/employees` body = employee fields + `{ hireDate, salaryMinor }` → `201` with employee; creates `hire` salary dated `hireDate` (not in the future) in same transaction. Duplicate email → `409`.
 - `PATCH /api/employees/:id` partial employee fields (not salary) → `200`.
 
 **Interfaces — Produces (code):** `signToken(secret: string, nowMs: number, ttlMs: number): string`, `verifyToken(token: string, secret: string, nowMs: number): boolean` using `node:crypto` HMAC-SHA256 over the expiry time.
 
-- [ ] **Step 1:** Unit tests for `signToken`/`verifyToken`: valid, expired, tampered. Run → FAIL. Implement. Run → PASS.
-- [ ] **Step 2:** Integration tests (rolled back): list paginates and returns `total`; filter by country+level; `q="50%_off"` matches only a literal name; page past end gives `items: []` with correct `total`; `pageSize=101` → 400; get unknown id → 404; create with invalid email → 400 with `issues`; duplicate email → 409; request without token → 401. Run → FAIL.
-- [ ] **Step 3:** Implement routes (Zod), service, db queries. Run → PASS.
-- [ ] **Step 4:** Commit `feat(api): employee directory, profile, create and edit`. Run `superpowers:requesting-code-review`.
+- [x] **Step 1:** Unit tests for `signToken`/`verifyToken`: valid, expired, tampered. Run → FAIL. Implement. Run → PASS.
+- [x] **Step 2:** Integration tests (rolled back): list paginates and returns `total`; filter by country+level; `q="50%_off"` matches only a literal name; page past end gives `items: []` with correct `total`; `pageSize=101` → 400; get unknown id → 404; create with invalid email → 400 with `issues`; duplicate email → 409; request without token → 401. Run → FAIL.
+- [x] **Step 3:** Implement routes (Zod), service, db queries. Run → PASS.
+- [x] **Step 4:** Commit `feat(api): employee directory, profile, create and edit`. Run `superpowers:requesting-code-review`.
 
 ### Task 6: Salary history
 

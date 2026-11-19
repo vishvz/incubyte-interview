@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { generateEmployees, SEED_TODAY } from '../../src/seed/generate.js';
-import { COUNTRIES, PAY_BANDS } from '../../src/seed/reference.js';
+import { COUNTRIES, PAY_BANDS } from '../../src/reference.js';
 
 const currencyOf = Object.fromEntries(COUNTRIES.map((c) => [c.code, c.currency]));
 const full = generateEmployees(42, 10_000);

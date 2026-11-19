@@ -1,5 +1,5 @@
 import { mulberry32 } from '../lib/random.js';
-import { COUNTRIES, DEPARTMENTS, LEVELS, PAY_BANDS } from './reference.js';
+import { COUNTRIES, DEPARTMENTS, LEVELS, PAY_BANDS } from '../reference.js';
 
 /** Fixed "today" for generated data, so the seed never depends on the real clock. */
 export const SEED_TODAY = '2026-11-01';

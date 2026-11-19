@@ -1,7 +1,7 @@
 // Usage: npm run seed  (uses DATABASE_URL; SEED and SEED_COUNT are optional)
 import { createDb } from '../db/knex.js';
 import { generateEmployees } from './generate.js';
-import { FX_RATES, PAY_BANDS } from './reference.js';
+import { FX_RATES, PAY_BANDS } from '../reference.js';
 
 const url = process.env.DATABASE_URL;
 if (!url) throw new Error('DATABASE_URL is not set');
