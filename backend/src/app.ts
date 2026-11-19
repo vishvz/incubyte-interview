@@ -17,6 +17,11 @@ export interface AppOptions {
   authSecret: string;
   /** Today's date as 'YYYY-MM-DD'; injectable so tests do not depend on the clock. */
   today?: () => string;
+  /**
+   * Number of proxy hops in front of the app, so req.ip is the real client (used by login throttling).
+   * 0 locally. On Render it is 3: a local proxy, Render's load balancer, then Cloudflare.
+   */
+  trustProxy?: number;
 }
 
 const TOKEN_TTL_MS = 12 * 3_600_000;
@@ -27,8 +32,7 @@ const sha256 = (s: string) => createHash('sha256').update(s).digest();
 export function createApp(db: Knex, options: AppOptions) {
   const today = options.today ?? todayUtc;
   const app = express();
-  // Behind Render's proxy: trust one hop so req.ip is the client address (used by login throttling).
-  app.set('trust proxy', 1);
+  app.set('trust proxy', options.trustProxy ?? 0);
   app.disable('x-powered-by');
   app.use((_req, res, next) => {
     res.set({
@@ -79,19 +83,6 @@ export function createApp(db: Knex, options: AppOptions) {
     next();
   };
   app.use('/api', requireAuth);
-
-  // TEMPORARY diagnostic (removed in the next commit): shows how Render's proxies present the client address.
-  app.get('/api/debug/client-ip', (req, res) => {
-    res.json({
-      ip: req.ip,
-      ips: req.ips,
-      remote: req.socket.remoteAddress,
-      xForwardedFor: req.get('x-forwarded-for') ?? null,
-      cfConnectingIp: req.get('cf-connecting-ip') ?? null,
-      trueClientIp: req.get('true-client-ip') ?? null,
-      xRealIp: req.get('x-real-ip') ?? null,
-    });
-  });
 
   app.use('/api/meta', metaRouter(db));
   app.use('/api/employees', employeesRouter(db, { today }));

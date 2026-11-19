@@ -8,6 +8,7 @@ const app = createApp(db, {
   corsOrigin: config.CORS_ORIGIN,
   authPassword: config.AUTH_PASSWORD,
   authSecret: config.AUTH_SECRET,
+  trustProxy: config.TRUST_PROXY,
 });
 
 app.listen(config.PORT, () => {
