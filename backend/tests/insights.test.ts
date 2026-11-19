@@ -61,6 +61,26 @@ describe('GET /api/insights/distribution', () => {
     expect(sales).toMatchObject({ headcount: 1, medianMinor: 10_160_000 });
   });
 
+  it('converts each salary to USD before taking a department median', async () => {
+    // Engineering becomes 9M, 10M, 10.16M (8M GBP), 11M, 12M, 14M USD: median (10.16M + 11M) / 2
+    await insertEmployee(getTrx(), { country: 'GB', currency: 'GBP', level: 'L3', department: 'Engineering', salaryMinor: 8_000_000 });
+    const res = await api().get('/api/insights/distribution?by=department').set(authHeader);
+    const eng = res.body.rows.find((r: { department: string }) => r.department === 'Engineering');
+    expect(eng).toMatchObject({ headcount: 6, medianMinor: 10_580_000 });
+  });
+
+  it('gives department figures in another currency', async () => {
+    const res = await api().get('/api/insights/distribution?by=department&currency=EUR').set(authHeader);
+    const sales = res.body.rows.find((r: { department: string }) => r.department === 'Sales');
+    // 8M GBP * 1.27 / 1.08
+    expect(sales).toMatchObject({ medianMinor: 9_407_407, currency: 'EUR' });
+  });
+
+  it('rejects unknown country and level filters instead of returning nothing', async () => {
+    expect((await api().get('/api/insights/distribution?by=country_level&country=us').set(authHeader)).status).toBe(400);
+    expect((await api().get('/api/insights/band-check?position=below&level=l3').set(authHeader)).status).toBe(400);
+  });
+
   it('rejects local currency for departments, which mix currencies', async () => {
     const res = await api().get('/api/insights/distribution?by=department&currency=local').set(authHeader);
     expect(res.status).toBe(400);
@@ -83,6 +103,13 @@ describe('GET /api/insights/band-check', () => {
       id: below, amountMinor: 9_000_000, currency: 'USD', gapMinor: 200_000, gapPct: 2.2,
       band: { minMinor: 9_200_000, midMinor: 11_500_000, maxMinor: 13_800_000 },
     });
+  });
+
+  it('orders employees by the largest percentage gap first', async () => {
+    // 8M vs a 9.2M minimum is a 13% gap, larger than the 2.2% gap of the 9M employee
+    const { id: further } = await insertEmployee(getTrx(), { country: 'US', level: 'L3', salaryMinor: 8_000_000 });
+    const res = await api().get('/api/insights/band-check?position=below').set(authHeader);
+    expect(res.body.items.map((e: { id: number }) => e.id)).toEqual([further, below]);
   });
 
   it('lists employees above their band', async () => {

@@ -15,6 +15,7 @@ export interface SalaryChange {
 export async function recordSalaryChange(db: Knex, employeeId: number, change: SalaryChange) {
   const employee = await employees.findEmployee(db, employeeId);
   if (!employee) throw new HttpError(404, 'Employee not found');
+  if (employee.status === 'terminated') throw new HttpError(409, 'Cannot change the salary of a terminated employee');
   if (change.effectiveDate < employee.hire_date) {
     throw new HttpError(400, `Effective date cannot be before the hire date (${employee.hire_date})`);
   }

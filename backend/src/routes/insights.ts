@@ -1,10 +1,11 @@
 import { Router } from 'express';
 import type { Knex } from 'knex';
 import { z } from 'zod';
+import { countryCode, levelCode } from '../http.js';
 import * as service from '../services/insights.js';
 
 const currency = z.string().regex(/^([A-Z]{3}|local)$/, 'Use a 3-letter currency code or "local"').default('USD');
-const scope = { country: z.string().length(2).optional(), level: z.string().max(10).optional() };
+const scope = { country: countryCode.optional(), level: levelCode.optional() };
 
 const distributionQuery = z.object({
   by: z.enum(['country_level', 'department']),

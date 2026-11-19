@@ -43,14 +43,13 @@ export async function listEmployees(db: Knex, f: ListFilters) {
     salary: ['usd_minor'],
   }[f.sort].map((column) => ({ column, order: f.order }));
 
-  const [rows, [{ count }]] = await Promise.all([
-    filtered(db, f)
+  // Sequential, not Promise.all: a transaction is one connection and pg cannot run queries in parallel on it.
+  const rows = await filtered(db, f)
       .select('e.*', 's.amount_minor', 's.currency', db.raw('round(s.amount_minor * fx.rate_to_usd)::bigint as usd_minor'))
       .orderBy([...orderBy, { column: 'e.id', order: f.order }])
       .limit(f.pageSize)
-      .offset((f.page - 1) * f.pageSize),
-    filtered(db, f).count<{ count: string }[]>('* as count'),
-  ]);
+      .offset((f.page - 1) * f.pageSize);
+  const [{ count }] = await filtered(db, f).count<{ count: string }[]>('* as count');
   return { rows, total: Number(count) };
 }
 

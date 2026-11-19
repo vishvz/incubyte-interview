@@ -91,16 +91,12 @@ export async function payroll(db: Knex, currency: string) {
   const { rateOf, rateAsOf } = await rates(db, currency);
   const target = rateOf.get(currency)!;
   const rows = await repo.payrollByDepartment(db);
-  // Total from unrounded USD sums, so it can differ from the sum of the rows by a cent or two.
-  const totalUsd = rows.reduce((sum, r: Record<string, any>) => sum + r.total_usd, 0);
-  return {
-    currency,
-    rateAsOf,
-    totalMinor: Math.round(totalUsd / target),
-    rows: rows.map((r: Record<string, any>) => ({
-      department: r.department,
-      headcount: Number(r.headcount),
-      totalMinor: Math.round(r.total_usd / target),
-    })),
-  };
+  const departments = rows.map((r: Record<string, any>) => ({
+    department: r.department,
+    headcount: Number(r.headcount),
+    totalMinor: Math.round(r.total_usd / target),
+  }));
+  // The total is the sum of the rounded rows, so the table always adds up.
+  const totalMinor = departments.reduce((sum, r) => sum + r.totalMinor, 0);
+  return { currency, rateAsOf, totalMinor, rows: departments };
 }

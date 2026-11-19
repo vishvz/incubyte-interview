@@ -73,6 +73,13 @@ describe('POST /api/employees/:id/salaries', () => {
     expect((await post({ amountMinor: 10.5, effectiveDate: '2025-01-01', reason: 'adjustment' })).status).toBe(400);
   });
 
+  it('returns 409 for a terminated employee', async () => {
+    const { id } = await insertEmployee(getTrx(), { status: 'terminated' });
+    const res = await api().post(`/api/employees/${id}/salaries`).set(authHeader)
+      .send({ amountMinor: 10_100_000, effectiveDate: '2025-01-01', reason: 'adjustment' });
+    expect(res.status).toBe(409);
+  });
+
   it('returns 404 for an unknown employee', async () => {
     const res = await api().post('/api/employees/999999/salaries').set(authHeader)
       .send({ amountMinor: 100, effectiveDate: '2025-01-01', reason: 'adjustment' });

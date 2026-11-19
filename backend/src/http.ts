@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { COUNTRIES, DEPARTMENTS, LEVELS } from './reference.js';
 
 export class HttpError extends Error {
   constructor(
@@ -26,3 +27,7 @@ export const pastOrToday = (today: () => string) =>
     const tomorrow = new Date(Date.parse(`${today()}T00:00:00Z`) + 86_400_000).toISOString().slice(0, 10);
     return d <= tomorrow;
   }, 'Date cannot be in the future');
+
+export const countryCode = z.enum(COUNTRIES.map((c) => c.code) as [string, ...string[]]);
+export const departmentName = z.enum(DEPARTMENTS.map((d) => d.name) as [string, ...string[]]);
+export const levelCode = z.enum(LEVELS.map((l) => l.code) as [string, ...string[]]);

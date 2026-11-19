@@ -66,8 +66,7 @@ export async function bandCheck(
     args.position === 'below' ? 'b.min_minor - s.amount_minor' : 's.amount_minor - b.max_minor';
   const bound = args.position === 'below' ? 'b.min_minor' : 'b.max_minor';
 
-  const [rows, [{ count }], [counts]] = await Promise.all([
-    outside(withBand(db, args))
+  const rows = await outside(withBand(db, args))
       .select(
         'e.*',
         's.amount_minor',
@@ -80,14 +79,13 @@ export async function bandCheck(
       )
       .orderByRaw(`(${gap}) * 1.0 / ${bound} desc, e.id`)
       .limit(args.pageSize)
-      .offset((args.page - 1) * args.pageSize),
-    outside(withBand(db, args)).count<{ count: string }[]>('* as count'),
-    withBand(db, args).select(
+      .offset((args.page - 1) * args.pageSize);
+  const [{ count }] = await outside(withBand(db, args)).count<{ count: string }[]>('* as count');
+  const [counts] = await withBand(db, args).select(
       db.raw('count(*) filter (where s.amount_minor < b.min_minor)::int as below'),
       db.raw('count(*) filter (where s.amount_minor between b.min_minor and b.max_minor)::int as within'),
       db.raw('count(*) filter (where s.amount_minor > b.max_minor)::int as above'),
-    ),
-  ]);
+  );
   return { rows, total: Number(count), counts: counts as { below: number; within: number; above: number } };
 }
 

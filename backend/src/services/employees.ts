@@ -47,10 +47,8 @@ export async function listEmployees(db: Knex, filters: repo.ListFilters) {
 export async function getEmployeeProfile(db: Knex, id: number) {
   const employee = await repo.findEmployee(db, id);
   if (!employee) return undefined;
-  const [rows, bandRow] = await Promise.all([
-    repo.salaryHistory(db, id),
-    findBand(db, employee.level, employee.country),
-  ]);
+  const rows = await repo.salaryHistory(db, id);
+  const bandRow = await findBand(db, employee.level, employee.country);
   const history = rows.map(toSalary);
   const currentSalary = history[0] ?? null;
   const band =

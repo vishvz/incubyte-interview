@@ -1,14 +1,10 @@
 import { Router } from 'express';
 import type { Knex } from 'knex';
 import { z } from 'zod';
-import { HttpError, idParam, pastOrToday } from '../http.js';
-import { COUNTRIES, DEPARTMENTS, LEVELS } from '../reference.js';
+import { countryCode, departmentName as department, HttpError, idParam, levelCode as level, pastOrToday } from '../http.js';
 import * as service from '../services/employees.js';
 
 const text = z.string().trim().min(1).max(200);
-const countryCode = z.enum(COUNTRIES.map((c) => c.code) as [string, ...string[]]);
-const department = z.enum(DEPARTMENTS.map((d) => d.name) as [string, ...string[]]);
-const level = z.enum(LEVELS.map((l) => l.code) as [string, ...string[]]);
 const status = z.enum(['active', 'terminated']);
 
 const listQuery = z.object({
