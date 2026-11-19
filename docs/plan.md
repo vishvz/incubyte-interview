@@ -69,10 +69,10 @@
 - `.env.example`: `DATABASE_URL`, `DATABASE_URL_TEST`, `PORT=4000`, `CORS_ORIGIN=http://localhost:5173`, `AUTH_PASSWORD`, `AUTH_SECRET`
 
 - [x] **Step 1:** Test `GET /api/health` returns `200 { ok: true }`. Run `npm test` → FAIL.
-- [ ] **Step 2:** Implement `createApp` with the health route. Run → PASS.
-- [ ] **Step 3:** `db:create` script connects to the `postgres` maintenance DB and creates `acme` and `acme_test` if missing (psql is not available locally).
-- [ ] **Step 4:** Frontend: `npm test` (one trivial test) and `npm run build` pass.
-- [ ] **Step 5:** Commit `chore: scaffold backend and frontend with CI`. Push.
+- [x] **Step 2:** Implement `createApp` with the health route. Run → PASS.
+- [x] **Step 3:** `db:create` script connects to the `postgres` maintenance DB and creates `acme` and `acme_test` if missing (psql is not available locally).
+- [x] **Step 4:** Frontend: `npm test` (one trivial test) and `npm run build` pass.
+- [x] **Step 5:** Commit `chore: scaffold backend and frontend with CI`. Push.
 
 ### Task 3: Schema
 
@@ -88,9 +88,9 @@ Tables:
 
 **Interfaces — Produces:** `withRollback()` test helper: `beforeEach` opens `trx = await db.transaction()`, `afterEach` `trx.rollback()`; exposes `getTrx(): Knex.Transaction`. Fixture `insertEmployee(trx, overrides?) : Promise<{ id: number }>` inserts an employee plus a `hire` salary.
 
-- [ ] **Step 1:** Test inserting a salary with `amount_minor = 0` fails; test `current_salaries` returns the latest of two rows. Run → FAIL.
-- [ ] **Step 2:** Write migration. `npm run migrate` against `acme_test`. Run → PASS.
-- [ ] **Step 3:** Commit `feat(db): add schema for employees, salaries, fx rates and pay bands`.
+- [x] **Step 1:** Test inserting a salary with `amount_minor = 0` fails; test `current_salaries` returns the latest of two rows. Run → FAIL.
+- [x] **Step 2:** Write migration. `npm run migrate` against `acme_test`. Run → PASS.
+- [x] **Step 3:** Commit `feat(db): add schema for employees, salaries, fx rates and pay bands`.
 
 ### Task 4: Seed
 

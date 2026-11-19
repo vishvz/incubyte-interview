@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import request from 'supertest';
 import { createApp } from '../src/app.js';
-import { testDb } from './helpers/db.js';
+import { testDb, withRollback } from './helpers/db.js';
+
+withRollback();
 
 describe('GET /api/health', () => {
   it('returns ok', async () => {
