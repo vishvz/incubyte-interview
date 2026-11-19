@@ -41,14 +41,20 @@ src/
   lib/money.ts        parseMajorToMinor, formatMinor, convertMinor (tested)
   lib/format.ts       Dates, reason labels, small helpers
   components/
-    RangeBar.tsx      The pay band range bar
-    ui.tsx            Page header, stat tile, person cell, reason badge, change delta, empty state
+    BandGauge.tsx     One salary against its band (profile)
+    RangeBar.tsx      Compact band and quartile bar (table rows)
+    ui.tsx            Page header, table card, stat tile, person cell, reason badge, change delta, empty state
   pages/              One file per page
 ```
 
 ## Design
 
-The app is built for an HR manager who lives in spreadsheets: dense tables, tabular figures, plain labels. The one memorable element is the **pay band range bar**: the band (light green), the middle half of salaries (green bar), the median (dark tick) and the employee (dot). It appears on the profile, pay ranges and outside band pages, so pay is always read against the band.
+The app is built for an HR manager who lives in spreadsheets: dense tables, tabular figures, plain labels. Pay is always read against its band:
+
+- **Band gauge** (profile): three zones (below, within, above the band) with a labelled pin for the salary and min, mid and max marked underneath.
+- **Range bar** (table rows): the band, the middle half of salaries (green bar), the median (dark tick) and an employee dot, on one shared scale per table so rows can be compared.
+
+Every table sits in a card with its filters on top and paging underneath. On narrow screens, less important columns are hidden rather than clipped.
 
 - Chart colours were checked with a palette validator for colour-blind separation and contrast. Below and above band are never shown by colour alone; text always says which.
 - Lighthouse accessibility scores 100 on the profile, overview and outside band pages. Clickable rows also contain real links, sort headers expose `aria-sort`, and range bars have text labels.

@@ -1,6 +1,9 @@
-import { Alert, Anchor, Avatar, Badge, Button, Grid, Group, Loader, Paper, Select, Stack, Table, Text, Textarea, TextInput, Title } from '@mantine/core';
+import { Alert, Anchor, Avatar, Badge, Button, Grid, Group, Loader, Paper, Select, SimpleGrid, Stack, Table, Text, Textarea, TextInput, Title } from '@mantine/core';
 import {
+  IconArrowDownRight,
   IconArrowLeft,
+  IconArrowUpRight,
+  IconCircleCheck,
   IconBriefcase,
   IconBuilding,
   IconCalendarEvent,
@@ -18,7 +21,7 @@ import { Link, useParams } from 'react-router';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { ApiError, apiFetch, post } from '../api/client';
 import type { EmployeeProfile as Profile, Salary, SalaryReason } from '../api/types';
-import { paddedDomain, RangeBar } from '../components/RangeBar';
+import { BandGauge } from '../components/BandGauge';
 import { ChangeDelta, ReasonBadge } from '../components/ui';
 import { useMoney } from '../currency';
 import { formatDate, REASON_LABELS, todayIso } from '../lib/format';
@@ -50,6 +53,8 @@ export function EmployeeProfile() {
   // Band and salary share the employee's currency; convert both together for display.
   const c = (m: number) => money.convert(m, current?.currency ?? 'USD').amountMinor;
   const shownCurrency = current ? money.convert(0, current.currency).currency : 'USD';
+  const PositionIcon =
+    band?.position === 'below' ? IconArrowDownRight : band?.position === 'above' ? IconArrowUpRight : IconCircleCheck;
 
   return (
     <Stack gap="lg">
@@ -93,8 +98,8 @@ export function EmployeeProfile() {
       </div>
 
       {current && (
-        <Paper withBorder p="lg">
-          <Group align="end" gap="xl" wrap="wrap">
+        <Paper withBorder p="lg" radius="md">
+          <SimpleGrid cols={{ base: 1, md: band ? 2 : 1 }} spacing="xl" verticalSpacing="lg">
             <div>
               <Text size="sm" c="dimmed">
                 Current salary, since {formatDate(current.effectiveDate)}
@@ -109,24 +114,30 @@ export function EmployeeProfile() {
               )}
             </div>
             {band && (
-              <Stack gap={4} style={{ flex: 1, minWidth: 260 }}>
-                <Text size="sm" fw={600} className={`position-${band.position}`}>
-                  {POSITION_TEXT[band.position]} for {e.level} in {e.country}
-                </Text>
-                <RangeBar
-                  // Wider padding leaves room for the min and max labels at the band edges.
-                  domain={paddedDomain([band.minMinor, band.maxMinor, current.amountMinor].map(c), 0.15)}
+              <Stack gap="xs">
+                <Group justify="space-between" wrap="wrap" gap="xs">
+                  <Text size="sm" c="dimmed">
+                    Pay band for {e.level} in {e.country}
+                  </Text>
+                  <Badge
+                    variant="light"
+                    tt="none"
+                    color={band.position === 'below' ? 'yellow' : band.position === 'above' ? 'indigo' : 'ledger'}
+                    leftSection={<PositionIcon size={14} stroke={2} />}
+                    className={`badge-${band.position}`}
+                  >
+                    {POSITION_TEXT[band.position]}
+                  </Badge>
+                </Group>
+                <BandGauge
                   band={{ minMinor: c(band.minMinor), midMinor: c(band.midMinor), maxMinor: c(band.maxMinor) }}
-                  marker={{ amountMinor: c(current.amountMinor), position: band.position }}
-                  label={`Salary ${money.format(current.amountMinor, current.currency)}, band ${money.format(band.minMinor, current.currency)} to ${money.format(band.maxMinor, current.currency)}`}
-                  ticks={(['min', 'mid', 'max'] as const).map((k) => ({
-                    value: c(band[`${k}Minor`]),
-                    text: `${k[0].toUpperCase()}${k.slice(1)} ${money.format(band[`${k}Minor`], current.currency, { cents: false })}`,
-                  }))}
+                  amountMinor={c(current.amountMinor)}
+                  position={band.position}
+                  format={(m) => formatMinor(m, shownCurrency, { cents: false })}
                 />
               </Stack>
             )}
-          </Group>
+          </SimpleGrid>
         </Paper>
       )}
 
@@ -198,12 +209,11 @@ function HistoryChart({ history }: { history: Salary[] }) {
 function HistoryTable({ history }: { history: Salary[] }) {
   const money = useMoney();
   return (
-    <Table.ScrollContainer minWidth={480}>
       <Table verticalSpacing="xs">
         <Table.Thead>
           <Table.Tr>
             <Table.Th>Effective</Table.Th>
-            <Table.Th>Reason</Table.Th>
+            <Table.Th visibleFrom="xs">Reason</Table.Th>
             <Table.Th ta="right">Salary</Table.Th>
             <Table.Th ta="right">Change</Table.Th>
           </Table.Tr>
@@ -215,7 +225,7 @@ function HistoryTable({ history }: { history: Salary[] }) {
             return (
               <Table.Tr key={s.id}>
                 <Table.Td className="num">{formatDate(s.effectiveDate)}</Table.Td>
-                <Table.Td>
+                <Table.Td visibleFrom="xs">
                   <ReasonBadge reason={s.reason} />
                   {s.note && (
                     <Text size="xs" c="dimmed">
@@ -234,7 +244,6 @@ function HistoryTable({ history }: { history: Salary[] }) {
           })}
         </Table.Tbody>
       </Table>
-    </Table.ScrollContainer>
   );
 }
 

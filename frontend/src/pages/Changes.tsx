@@ -1,10 +1,10 @@
-import { Alert, Loader, Paper, Stack, Table, Text } from '@mantine/core';
+import { Alert, Group, Loader, Stack, Table, Text } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
 
 import { apiFetch } from '../api/client';
 import type { RecentChange } from '../api/types';
 import { IconHistory } from '@tabler/icons-react';
-import { ChangeDelta, EmptyState, PageHeader, PersonCell, ReasonBadge } from '../components/ui';
+import { ChangeDelta, EmptyState, PageHeader, PersonCell, ReasonBadge, TableCard } from '../components/ui';
 import { useMoney } from '../currency';
 import { formatDate } from '../lib/format';
 
@@ -22,18 +22,21 @@ export function Changes() {
         title="Recent changes"
         description="The 50 latest salary changes by effective date, including new hires."
       />
-      {query.isPending && <Loader />}
       {query.error && <Alert color="red">{query.error.message}</Alert>}
-      {query.data && (
-        <Paper withBorder>
-          <Table.ScrollContainer minWidth={760}>
+      <TableCard>
+        {query.isPending && (
+          <Group justify="center" py="xl">
+            <Loader />
+          </Group>
+        )}
+        {query.data && (
             <Table verticalSpacing="sm">
               <Table.Thead>
                 <Table.Tr>
-                  <Table.Th>Effective</Table.Th>
+                  <Table.Th visibleFrom="sm">Effective</Table.Th>
                   <Table.Th>Employee</Table.Th>
-                  <Table.Th>Reason</Table.Th>
-                  <Table.Th ta="right">From</Table.Th>
+                  <Table.Th visibleFrom="md">Reason</Table.Th>
+                  <Table.Th ta="right" visibleFrom="lg">From</Table.Th>
                   <Table.Th ta="right">To</Table.Th>
                   <Table.Th ta="right">Change</Table.Th>
                 </Table.Tr>
@@ -41,7 +44,7 @@ export function Changes() {
               <Table.Tbody>
                 {query.data.items.map((c) => (
                   <Table.Tr key={c.id}>
-                    <Table.Td className="num">{formatDate(c.effectiveDate)}</Table.Td>
+                    <Table.Td className="num" visibleFrom="sm">{formatDate(c.effectiveDate)}</Table.Td>
                     <Table.Td>
                       <PersonCell
                         id={c.employeeId}
@@ -50,11 +53,11 @@ export function Changes() {
                         sub={c.employeeCode}
                       />
                     </Table.Td>
-                    <Table.Td>
+                    <Table.Td visibleFrom="md">
                       <ReasonBadge reason={c.reason} />
                       {c.note && <Text size="xs" c="dimmed">{c.note}</Text>}
                     </Table.Td>
-                    <Table.Td ta="right" className="num">
+                    <Table.Td ta="right" className="num" visibleFrom="lg">
                       {c.previousMinor === null ? '' : money.format(c.previousMinor, c.currency, { cents: false })}
                     </Table.Td>
                     <Table.Td ta="right" className="num">{money.format(c.amountMinor, c.currency, { cents: false })}</Table.Td>
@@ -72,9 +75,8 @@ export function Changes() {
                 )}
               </Table.Tbody>
             </Table>
-          </Table.ScrollContainer>
-        </Paper>
-      )}
+        )}
+      </TableCard>
     </Stack>
   );
 }

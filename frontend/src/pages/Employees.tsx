@@ -1,4 +1,4 @@
-import { Alert, Badge, Button, Group, Loader, Pagination, Select, Table, TextInput, UnstyledButton } from '@mantine/core';
+import { Alert, Badge, Button, Group, Loader, Pagination, Select, Table, Text, TextInput, UnstyledButton, type MantineBreakpoint } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
@@ -7,7 +7,7 @@ import { apiFetch, qs } from '../api/client';
 import { paginationLabels } from '../lib/format';
 import type { EmployeeListItem, Page } from '../api/types';
 import { IconArrowsSort, IconPlus, IconSearch, IconSortAscending, IconSortDescending, IconUsers } from '@tabler/icons-react';
-import { EmptyState, PageHeader, PersonCell } from '../components/ui';
+import { EmptyState, PageHeader, PersonCell, TableCard } from '../components/ui';
 import { useMeta, useMoney } from '../currency';
 import { formatDate } from '../lib/format';
 
@@ -59,11 +59,12 @@ export function Employees() {
 
   const sortBy = (key: SortKey) =>
     update({ sort: key, order: filters.sort === key && filters.order === 'asc' ? 'desc' : 'asc' });
-  const SortHeader = ({ k, children, align }: { k: SortKey; children: string; align?: 'right' }) => {
+  const SortHeader = ({ k, children, align, visibleFrom }: { k: SortKey; children: string; align?: 'right'; visibleFrom?: MantineBreakpoint }) => {
     const active = filters.sort === k;
     return (
       <Table.Th
         ta={align}
+        visibleFrom={visibleFrom}
         aria-sort={active ? (filters.order === 'asc' ? 'ascending' : 'descending') : 'none'}
       >
         <UnstyledButton onClick={() => sortBy(k)} fw={600} fz="sm" className="sort-button" data-align={align}>
@@ -99,114 +100,137 @@ export function Employees() {
         }
       />
 
-      <Group gap="sm" mb="md" align="end" wrap="wrap">
-        <TextInput
-          label="Search"
-          placeholder="Name, employee code or email"
-          leftSection={<IconSearch size={16} />}
-          value={search}
-          onChange={(e) => setSearch(e.currentTarget.value)}
-          w={280}
-        />
-        <Select
-          label="Country"
-          placeholder="All"
-          clearable
-          value={filters.country || null}
-          onChange={(v) => update({ country: v ?? '' })}
-          data={meta?.countries.map((c) => ({ value: c.code, label: c.name })) ?? []}
-          w={170}
-        />
-        <Select
-          label="Department"
-          placeholder="All"
-          clearable
-          value={filters.department || null}
-          onChange={(v) => update({ department: v ?? '' })}
-          data={meta?.departments ?? []}
-          w={170}
-        />
-        <Select
-          label="Level"
-          placeholder="All"
-          clearable
-          value={filters.level || null}
-          onChange={(v) => update({ level: v ?? '' })}
-          data={meta?.levels ?? []}
-          w={110}
-        />
-        <Select
-          label="Status"
-          placeholder="All"
-          clearable
-          value={filters.status || null}
-          onChange={(v) => update({ status: v ?? '' })}
-          data={[
-            { value: 'active', label: 'Active' },
-            { value: 'terminated', label: 'Terminated' },
-          ]}
-          w={130}
-        />
-      </Group>
-
       {query.error && <Alert color="red" mb="md">{query.error.message}</Alert>}
-      {query.isPending && <Loader mb="md" />}
 
-      <Table.ScrollContainer minWidth={760}>
-        <Table highlightOnHover verticalSpacing="sm" bg="white" withTableBorder>
-          <Table.Thead>
-            <Table.Tr>
-              <SortHeader k="name">Name</SortHeader>
-              <Table.Th>Role</Table.Th>
-              <Table.Th>Department</Table.Th>
-              <Table.Th>Level</Table.Th>
-              <Table.Th>Country</Table.Th>
-              <SortHeader k="hire_date">Hired</SortHeader>
-              <SortHeader k="salary" align="right">
-                Salary
-              </SortHeader>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody style={{ opacity: query.isPlaceholderData ? 0.6 : 1 }}>
-            {data?.items.map((e) => (
-              <Table.Tr key={e.id} className="clickable-row" onClick={() => navigate(`/employees/${e.id}`)}>
-                <Table.Td>
-                  <PersonCell
-                    id={e.id}
-                    firstName={e.firstName}
-                    lastName={e.lastName}
-                    sub={e.employeeCode}
-                    terminated={e.status === 'terminated'}
-                  />
-                </Table.Td>
-                <Table.Td>{e.jobTitle}</Table.Td>
-                <Table.Td>{e.department}</Table.Td>
-                <Table.Td>
-                  <Badge variant="outline" color="gray" tt="none">{e.level}</Badge>
-                </Table.Td>
-                <Table.Td>{e.country}</Table.Td>
-                <Table.Td className="num">{formatDate(e.hireDate)}</Table.Td>
-                <Table.Td ta="right" className="num">
-                  {money.format(e.salary.amountMinor, e.salary.currency, { cents: false })}
-                </Table.Td>
-              </Table.Tr>
-            ))}
-            {data && data.items.length === 0 && (
+      <TableCard
+        toolbar={
+          <div className="filter-grid">
+            <TextInput
+              label="Search"
+              placeholder="Name, code or email"
+              leftSection={<IconSearch size={16} />}
+              value={search}
+              onChange={(e) => setSearch(e.currentTarget.value)}
+            />
+            <Select
+              label="Country"
+              placeholder="All countries"
+              clearable
+              value={filters.country || null}
+              onChange={(v) => update({ country: v ?? '' })}
+              data={meta?.countries.map((c) => ({ value: c.code, label: c.name })) ?? []}
+            />
+            <Select
+              label="Department"
+              placeholder="All departments"
+              clearable
+              value={filters.department || null}
+              onChange={(v) => update({ department: v ?? '' })}
+              data={meta?.departments ?? []}
+            />
+            <Select
+              label="Level"
+              placeholder="All levels"
+              clearable
+              value={filters.level || null}
+              onChange={(v) => update({ level: v ?? '' })}
+              data={meta?.levels ?? []}
+            />
+            <Select
+              label="Status"
+              placeholder="Any status"
+              clearable
+              value={filters.status || null}
+              onChange={(v) => update({ status: v ?? '' })}
+              data={[
+                { value: 'active', label: 'Active' },
+                { value: 'terminated', label: 'Terminated' },
+              ]}
+            />
+          </div>
+        }
+        footer={
+          data && data.total > 0 ? (
+            <>
+              <Text size="sm" c="dimmed" className="num">
+                Showing {((filters.page - 1) * PAGE_SIZE + 1).toLocaleString('en-US')}–
+                {Math.min(filters.page * PAGE_SIZE, data.total).toLocaleString('en-US')} of{' '}
+                {data.total.toLocaleString('en-US')}
+              </Text>
+              {pages > 1 && (
+                <Pagination
+                  size="sm"
+                  getControlProps={paginationLabels}
+                  total={pages}
+                  value={filters.page}
+                  onChange={(p) => update({ page: String(p) })}
+                />
+              )}
+            </>
+          ) : undefined
+        }
+      >
+        {query.isPending && (
+          <Group justify="center" py="xl">
+            <Loader />
+          </Group>
+        )}
+        {data && (
+          <Table highlightOnHover verticalSpacing="sm">
+            <Table.Thead>
               <Table.Tr>
-                <Table.Td colSpan={7}>
-                  <EmptyState title="No employees match">Clear a filter or change the search.</EmptyState>
-                </Table.Td>
+                <SortHeader k="name">Name</SortHeader>
+                <Table.Th visibleFrom="lg">Role</Table.Th>
+                <Table.Th visibleFrom="md">Department</Table.Th>
+                <Table.Th>Level</Table.Th>
+                <Table.Th visibleFrom="sm">Country</Table.Th>
+                <SortHeader k="hire_date" visibleFrom="lg">
+                  Hired
+                </SortHeader>
+                <SortHeader k="salary" align="right">
+                  Salary
+                </SortHeader>
               </Table.Tr>
-            )}
-          </Table.Tbody>
-        </Table>
-      </Table.ScrollContainer>
-
-      {pages > 1 && (
-        <Group justify="center" mt="md">
-          <Pagination getControlProps={paginationLabels} total={pages} value={filters.page} onChange={(p) => update({ page: String(p) })} />
-        </Group>
-      )}
+            </Table.Thead>
+            <Table.Tbody style={{ opacity: query.isPlaceholderData ? 0.6 : 1 }}>
+              {data.items.map((e) => (
+                <Table.Tr key={e.id} className="clickable-row" onClick={() => navigate(`/employees/${e.id}`)}>
+                  <Table.Td>
+                    <PersonCell
+                      id={e.id}
+                      firstName={e.firstName}
+                      lastName={e.lastName}
+                      sub={e.employeeCode}
+                      terminated={e.status === 'terminated'}
+                    />
+                  </Table.Td>
+                  <Table.Td visibleFrom="lg">{e.jobTitle}</Table.Td>
+                  <Table.Td visibleFrom="md">{e.department}</Table.Td>
+                  <Table.Td>
+                    <Badge variant="outline" color="gray" tt="none">
+                      {e.level}
+                    </Badge>
+                  </Table.Td>
+                  <Table.Td visibleFrom="sm">{e.country}</Table.Td>
+                  <Table.Td visibleFrom="lg" className="num">
+                    {formatDate(e.hireDate)}
+                  </Table.Td>
+                  <Table.Td ta="right" className="num">
+                    {money.format(e.salary.amountMinor, e.salary.currency, { cents: false })}
+                  </Table.Td>
+                </Table.Tr>
+              ))}
+              {data.items.length === 0 && (
+                <Table.Tr>
+                  <Table.Td colSpan={7}>
+                    <EmptyState title="No employees match">Clear a filter or change the search.</EmptyState>
+                  </Table.Td>
+                </Table.Tr>
+              )}
+            </Table.Tbody>
+          </Table>
+        )}
+      </TableCard>
     </>
   );
 }

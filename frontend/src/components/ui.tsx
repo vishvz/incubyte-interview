@@ -195,3 +195,54 @@ export function BrandMark({ size = 30 }: { size?: number }) {
     </svg>
   );
 }
+
+/**
+ * Card that holds a table: optional title row and filter toolbar on top, the table edge to edge,
+ * and an optional footer (paging). Narrow screens hide columns instead of clipping them; the body
+ * scrolls natively (visible scrollbar) only as a last resort.
+ */
+export function TableCard({
+  title,
+  icon: Icon,
+  meta,
+  actions,
+  toolbar,
+  footer,
+  children,
+}: {
+  title?: string;
+  icon?: Icon;
+  meta?: ReactNode;
+  actions?: ReactNode;
+  toolbar?: ReactNode;
+  footer?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <Paper withBorder radius="md" className="table-card">
+      {(title || toolbar) && (
+        <div className="table-card__head">
+          {title && (
+            <Group justify="space-between" align="center" wrap="wrap" gap="sm">
+              <Group gap={8} wrap="nowrap">
+                {Icon && <Icon size={20} stroke={1.7} aria-hidden="true" />}
+                <Title order={2} size="h4">
+                  {title}
+                </Title>
+                {meta && (
+                  <Text size="sm" c="dimmed">
+                    {meta}
+                  </Text>
+                )}
+              </Group>
+              {actions}
+            </Group>
+          )}
+          {toolbar && <div className="table-card__toolbar">{toolbar}</div>}
+        </div>
+      )}
+      <div className="table-card__body">{children}</div>
+      {footer && <div className="table-card__foot">{footer}</div>}
+    </Paper>
+  );
+}

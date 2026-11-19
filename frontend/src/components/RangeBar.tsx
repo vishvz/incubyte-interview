@@ -8,20 +8,18 @@ interface Props {
   marker?: { amountMinor: number; position?: BandPosition };
   /** Spoken summary for screen readers. */
   label: string;
-  /** Optional value labels drawn under the bar, on the same scale. */
-  ticks?: { value: number; text: string }[];
 }
 
 /**
  * The pay band range bar: band (light), P25-P75 box (green), median tick (ink),
  * and an optional employee marker coloured by band position.
  */
-export function RangeBar({ domain, band, quartiles, marker, label, ticks }: Props) {
+export function RangeBar({ domain, band, quartiles, marker, label }: Props) {
   const [lo, hi] = domain;
   const pct = (v: number) => `${Math.min(100, Math.max(0, ((v - lo) / (hi - lo || 1)) * 100))}%`;
   const width = (a: number, b: number) => `calc(${pct(b)} - ${pct(a)})`;
 
-  const bar = (
+  return (
     <div className="range" role="img" aria-label={label} title={label}>
       <div className="range__track" />
       {band && (
@@ -42,19 +40,6 @@ export function RangeBar({ domain, band, quartiles, marker, label, ticks }: Prop
       {marker && (
         <div className="range__marker" data-position={marker.position} style={{ left: pct(marker.amountMinor) }} />
       )}
-    </div>
-  );
-  if (!ticks) return bar;
-  return (
-    <div>
-      {bar}
-      <div className="range__ticks" aria-hidden="true">
-        {ticks.map((t) => (
-          <span key={t.text} style={{ left: pct(t.value) }}>
-            {t.text}
-          </span>
-        ))}
-      </div>
     </div>
   );
 }
