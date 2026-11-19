@@ -49,3 +49,7 @@ Result: the backend is linked to a Neon project. Following the Neon Postgres ski
 > need to deploy backend on render
 
 Result: a `render.yaml` Blueprint for the API (Singapore region next to Neon, migrations at start, health check), and `CORS_ORIGIN` accepting a comma-separated list. The Render build and start commands were rehearsed locally from a clean checkout against Neon before committing.
+
+> why dont we deploy frontend on it as well? can we?
+
+Result: the frontend became a Render static site in the same Blueprint. Render's `fromService` only exposes private hostnames, so the two public URLs are written into `render.yaml`. The production build was served locally on an allowed origin and logged in against the live API (wrong password, correct error) before pushing.

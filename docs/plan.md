@@ -185,7 +185,8 @@ First dropped on 2026-11-19 (run locally), then partly revived the same day:
 
 - [x] Database on Neon: linked with `neon init` / `neon deploy`, migrated and seeded (`chore(db): link backend to Neon Postgres`).
 - [x] API on Render: `render.yaml` Blueprint (Singapore, next to the Neon region), build `npm ci && npm run build`, start `npm run migrate:prod && npm start`, health check `/api/health`. `CORS_ORIGIN` accepts a comma-separated list.
-- [ ] Frontend: not deployed. When it is, add its URL to `CORS_ORIGIN` and set `VITE_API_URL` to the Render URL.
+- [x] API live at https://acme-salaries-api.onrender.com (health, auth and CORS checked with real requests).
+- [x] Frontend as a Render static site in the same Blueprint: `VITE_API_URL` points at the API, `CORS_ORIGIN` lists the site, SPA rewrite to `index.html`. The production build was tested in a browser against the live API before pushing.
 
 ### Task 10: Docs (done)
 

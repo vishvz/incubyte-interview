@@ -18,7 +18,7 @@ What was chosen, what was left out, and when to revisit.
 | One shared HR password, HMAC token | Matches the single persona and keeps salary data private in a demo | No per-user audit trail, no roles and no login throttling. First things to add for production: real identity (OIDC/SSO), roles, rate limiting and an audit log of who changed which salary. |
 | Token in `localStorage` | Simple with a separate API origin | Readable by injected scripts. With real identity, move to an httpOnly, SameSite cookie. |
 | Search with `ILIKE '%text%'` | Correct and simple; wildcards in user text are escaped | Cannot use a B-tree index. Fine at 10,000 rows; add a `pg_trgm` GIN index if search slows down. |
-| API on Render free plan, database on Neon, frontend local | Free tiers; Render region matches Neon (Singapore) | The free Render service sleeps after 15 minutes idle, so the first request after a pause takes up to about a minute. Migrations run at start because the free plan has no pre-deploy step. |
+| API and frontend on Render free plan, database on Neon | Free tiers; Render region matches Neon (Singapore) | The free Render service sleeps after 15 minutes idle, so the first request after a pause takes up to about a minute. Migrations run at start because the free plan has no pre-deploy step. |
 
 ## Left out on purpose
 

@@ -18,6 +18,10 @@ The backend must be running and seeded (see `../backend/README.md`).
 | `npm test` | Unit tests (Vitest) |
 | `npm run build` | Type check and production build |
 
+## Deploying to Render
+
+`render.yaml` at the repository root also defines this app as a Render static site (`acme-salaries-web`): it builds with `npm ci && npm run build`, publishes `frontend/dist`, and rewrites every path to `index.html` so React Router handles deep links. `VITE_API_URL` is set to the API's public URL at build time. Static sites do not sleep, so the UI loads instantly even while the free API is waking up.
+
 ## Pages
 
 | Page | Path | Question it answers |
