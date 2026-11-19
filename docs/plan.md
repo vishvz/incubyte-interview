@@ -153,9 +153,9 @@ Generation rules: country weights US 40%, IN 25%, GB 15%, DE 12%, CA 8%. Salary 
 - `GET /api/insights/band-check?position=below|above&country?&level?&page&pageSize` → `{ items: { employee…, amountMinor, currency, band: {minMinor,midMinor,maxMinor}, gapMinor, gapPct }[], total }`, sorted by largest `gapPct` first. Employees with no band are excluded.
 - `GET /api/insights/payroll?currency=USD` → `{ rateAsOf, currency, rows: { department, headcount, totalMinor }[], totalMinor }`. Only `active` employees.
 
-- [ ] **Step 1:** Unit tests: `convertMinor(100000, 1.27, 1) === 127000`; INR→USD rounding; GBP→EUR via USD; `classifyBand` at min, max, below, above. Run → FAIL. Implement. Run → PASS.
-- [ ] **Step 2:** Integration tests with a small fixture (5 employees, known amounts): median and P25/P75 equal hand-computed values; band check lists only the below-band employee; employee without band excluded; payroll totals in USD and EUR equal hand-computed values; terminated employee not in payroll. Run → FAIL. Implement. Run → PASS.
-- [ ] **Step 3:** Commit `feat(api): pay distribution, band check and payroll insights`. Run `superpowers:requesting-code-review`.
+- [x] **Step 1:** Unit tests: `convertMinor(100000, 1.27, 1) === 127000`; INR→USD rounding; GBP→EUR via USD; `classifyBand` at min, max, below, above. Run → FAIL. Implement. Run → PASS.
+- [x] **Step 2:** Integration tests with a small fixture (5 employees, known amounts): median and P25/P75 equal hand-computed values; band check lists only the below-band employee; employee without band excluded; payroll totals in USD and EUR equal hand-computed values; terminated employee not in payroll. Run → FAIL. Implement. Run → PASS.
+- [x] **Step 3:** Commit `feat(api): pay distribution, band check and payroll insights`. Run `superpowers:requesting-code-review`.
 
 ### Task 8: Frontend
 

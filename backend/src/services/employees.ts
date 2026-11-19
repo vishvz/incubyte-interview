@@ -1,5 +1,7 @@
 import type { Knex } from 'knex';
 import * as repo from '../db/employees.js';
+import { findBand } from '../db/insights.js';
+import { classifyBand } from '../lib/bands.js';
 import { COUNTRIES } from '../reference.js';
 
 // Rows from Postgres are snake_case; the API speaks camelCase.
@@ -45,8 +47,22 @@ export async function listEmployees(db: Knex, filters: repo.ListFilters) {
 export async function getEmployeeProfile(db: Knex, id: number) {
   const employee = await repo.findEmployee(db, id);
   if (!employee) return undefined;
-  const history = (await repo.salaryHistory(db, id)).map(toSalary);
-  return { ...toEmployee(employee), currentSalary: history[0] ?? null, history };
+  const [rows, bandRow] = await Promise.all([
+    repo.salaryHistory(db, id),
+    findBand(db, employee.level, employee.country),
+  ]);
+  const history = rows.map(toSalary);
+  const currentSalary = history[0] ?? null;
+  const band =
+    bandRow && currentSalary
+      ? {
+          minMinor: bandRow.min_minor,
+          midMinor: bandRow.mid_minor,
+          maxMinor: bandRow.max_minor,
+          position: classifyBand(currentSalary.amountMinor, { minMinor: bandRow.min_minor, maxMinor: bandRow.max_minor }),
+        }
+      : null;
+  return { ...toEmployee(employee), currentSalary, band, history };
 }
 
 export interface NewEmployee {
