@@ -15,8 +15,11 @@ export interface ListFilters {
 /** Escapes LIKE wildcards so user text matches literally. */
 const escapeLike = (s: string) => s.replace(/[\\%_]/g, '\\$&');
 
+// Every listed employee needs a current salary and an FX rate; count with the same joins.
 function filtered(db: Knex, f: ListFilters) {
-  const query = db('employees as e');
+  const query = db('employees as e')
+    .join('current_salaries as s', 's.employee_id', 'e.id')
+    .join('fx_rates as fx', 'fx.currency', 's.currency');
   if (f.country) query.where('e.country', f.country);
   if (f.department) query.where('e.department', f.department);
   if (f.level) query.where('e.level', f.level);
@@ -35,15 +38,13 @@ function filtered(db: Knex, f: ListFilters) {
 
 export async function listEmployees(db: Knex, f: ListFilters) {
   const orderBy = {
-    name: ['e.last_name', 'e.first_name'],
+    name: [db.raw('lower(e.last_name)'), db.raw('lower(e.first_name)')],
     hire_date: ['e.hire_date'],
     salary: ['usd_minor'],
   }[f.sort].map((column) => ({ column, order: f.order }));
 
   const [rows, [{ count }]] = await Promise.all([
     filtered(db, f)
-      .join('current_salaries as s', 's.employee_id', 'e.id')
-      .join('fx_rates as fx', 'fx.currency', 's.currency')
       .select('e.*', 's.amount_minor', 's.currency', db.raw('round(s.amount_minor * fx.rate_to_usd)::bigint as usd_minor'))
       .orderBy([...orderBy, { column: 'e.id', order: f.order }])
       .limit(f.pageSize)

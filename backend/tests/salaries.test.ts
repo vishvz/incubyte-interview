@@ -48,14 +48,14 @@ describe('POST /api/employees/:id/salaries', () => {
     expect(p.history.map((s: { amountMinor: number }) => s.amountMinor)).toEqual([11_000_000, 9_500_000, 9_000_000]);
   });
 
-  it('accepts today and rejects a future effective date', async () => {
+  it('accepts today and tomorrow (UTC, for time zones ahead of UTC) but nothing later', async () => {
     const { id } = await insertEmployee(getTrx());
-    const today = await api().post(`/api/employees/${id}/salaries`).set(authHeader)
-      .send({ amountMinor: 10_100_000, effectiveDate: TEST_TODAY, reason: 'adjustment' });
-    expect(today.status).toBe(201);
-    const future = await api().post(`/api/employees/${id}/salaries`).set(authHeader)
-      .send({ amountMinor: 10_100_000, effectiveDate: '2026-11-20', reason: 'adjustment' });
-    expect(future.status).toBe(400);
+    const post = (effectiveDate: string) =>
+      api().post(`/api/employees/${id}/salaries`).set(authHeader)
+        .send({ amountMinor: 10_100_000, effectiveDate, reason: 'adjustment' });
+    expect((await post(TEST_TODAY)).status).toBe(201);
+    expect((await post('2026-11-20')).status).toBe(201);
+    expect((await post('2026-11-21')).status).toBe(400);
   });
 
   it('rejects a date before the hire date', async () => {

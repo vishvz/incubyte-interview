@@ -11,7 +11,9 @@
     "test:unit": "vitest run tests/unit",
     "db:create": "tsx --env-file-if-exists=.env src/scripts/create-dbs.ts",
     "migrate": "tsx --env-file-if-exists=.env src/scripts/migrate.ts",
-    "seed": "tsx --env-file-if-exists=.env src/seed/run.ts"
+    "seed": "tsx --env-file-if-exists=.env src/seed/run.ts",
+    "migrate:prod": "node dist/scripts/migrate.js",
+    "seed:prod": "node dist/seed/run.js"
   },
   "dependencies": {
     "cors": "^2.8.6",

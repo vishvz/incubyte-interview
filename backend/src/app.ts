@@ -30,6 +30,7 @@ export function createApp(db: Knex, options: AppOptions) {
     res.json({ ok: true });
   });
 
+  // ponytail: no login attempt throttling; add per-IP backoff or move to real identity (OIDC) for production.
   app.post('/api/login', (req, res) => {
     const { password } = z.object({ password: z.string() }).parse(req.body);
     if (!timingSafeEqual(sha256(password), sha256(options.authPassword))) {

@@ -144,8 +144,19 @@ describe('POST /api/employees', () => {
   });
 
   it('rejects a hire date in the future', async () => {
-    const res = await api().post('/api/employees').set(authHeader).send({ ...newEmployee, hireDate: '2027-01-01' });
+    const res = await api().post('/api/employees').set(authHeader).send({ ...newEmployee, hireDate: '2026-11-21' });
     expect(res.status).toBe(400);
+  });
+
+  it('stores the email in lower case', async () => {
+    const res = await api().post('/api/employees').set(authHeader).send({ ...newEmployee, email: 'Ada@ACME.example' });
+    expect(res.body.email).toBe('ada@acme.example');
+  });
+
+  it('returns 409 for an email that differs only in case', async () => {
+    await api().post('/api/employees').set(authHeader).send(newEmployee);
+    const res = await api().post('/api/employees').set(authHeader).send({ ...newEmployee, email: 'ADA@acme.example' });
+    expect(res.status).toBe(409);
   });
 
   it('returns 409 for a duplicate email', async () => {
@@ -161,6 +172,12 @@ describe('PATCH /api/employees/:id', () => {
     const res = await api().patch(`/api/employees/${id}`).set(authHeader).send({ jobTitle: 'Staff Engineer' });
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({ jobTitle: 'Staff Engineer', department: 'Engineering' });
+  });
+
+  it('does not accept a country change (salary currency would no longer match)', async () => {
+    const { id } = await insertEmployee(getTrx());
+    const res = await api().patch(`/api/employees/${id}`).set(authHeader).send({ country: 'GB' });
+    expect(res.status).toBe(400);
   });
 
   it('does not accept salary fields', async () => {

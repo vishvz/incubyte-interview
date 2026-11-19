@@ -1,13 +1,13 @@
 import { Router } from 'express';
 import type { Knex } from 'knex';
 import { z } from 'zod';
-import { idParam, isoDate } from '../http.js';
+import { idParam, pastOrToday } from '../http.js';
 import * as service from '../services/salaries.js';
 
 export function salariesRouter(db: Knex, { today }: { today: () => string }) {
   const changeBody = z.strictObject({
     amountMinor: z.number().int().positive().max(1e12),
-    effectiveDate: isoDate.refine((d) => d <= today(), 'Date cannot be in the future'),
+    effectiveDate: pastOrToday(today),
     // 'hire' is only set when the employee is created.
     reason: z.enum(['promotion', 'annual_review', 'adjustment']),
     note: z.string().trim().max(500).optional(),

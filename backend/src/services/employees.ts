@@ -96,7 +96,6 @@ export async function updateEmployee(
   id: number,
   changes: Partial<Omit<NewEmployee, 'hireDate' | 'salaryMinor'>> & { status?: string },
 ) {
-  // ponytail: changing country does not convert the salary currency; record a salary change for that.
   const updated = await repo.updateEmployee(db, id, toColumns(changes));
   return updated ? toEmployee(updated) : undefined;
 }

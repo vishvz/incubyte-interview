@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import type { Knex } from 'knex';
 import { z } from 'zod';
-import { HttpError, idParam, isoDate } from '../http.js';
+import { HttpError, idParam, pastOrToday } from '../http.js';
 import { COUNTRIES, DEPARTMENTS, LEVELS } from '../reference.js';
 import * as service from '../services/employees.js';
 
@@ -26,20 +26,20 @@ const listQuery = z.object({
 const employeeFields = {
   firstName: text,
   lastName: text,
-  email: z.email().max(200),
+  email: z.string().trim().toLowerCase().pipe(z.email().max(200)),
   jobTitle: text,
   department,
   level,
-  country: countryCode,
 };
 
 export function employeesRouter(db: Knex, { today }: { today: () => string }) {
-  const notFuture = isoDate.refine((d) => d <= today(), 'Date cannot be in the future');
   const createBody = z.strictObject({
     ...employeeFields,
-    hireDate: notFuture,
+    country: countryCode,
+    hireDate: pastOrToday(today),
     salaryMinor: z.number().int().positive().max(1e12),
   });
+  // Country is not editable: the salary currency follows the country.
   const updateBody = z
     .strictObject({ ...employeeFields, status })
     .partial()

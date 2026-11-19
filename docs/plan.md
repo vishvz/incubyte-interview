@@ -111,7 +111,7 @@ Generation rules: country weights US 40%, IN 25%, GB 15%, DE 12%, CA 8%. Salary 
 
 ### Task 5: Employee API
 
-**Files:** `backend/src/routes/employees.ts`, `backend/src/services/employees.ts`, `backend/src/db/employees.ts`, `backend/src/routes/meta.ts`, `backend/src/lib/auth.ts`, `backend/src/routes/auth.ts`, `backend/tests/employees.test.ts`, `backend/tests/unit/auth.test.ts`
+**Files:** `backend/src/routes/employees.ts`, `backend/src/services/employees.ts`, `backend/src/db/employees.ts`, `backend/src/routes/meta.ts`, `backend/src/lib/auth.ts` (login route lives in `src/app.ts`), `backend/tests/employees.test.ts`, `backend/tests/unit/auth.test.ts`
 
 **Interfaces — Produces (HTTP):**
 - `POST /api/login {password}` → `200 {token}` or `401`. All other `/api` routes except `/health` require `Authorization: Bearer <token>`, else `401`.
