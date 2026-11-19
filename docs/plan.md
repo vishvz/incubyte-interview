@@ -136,9 +136,9 @@ Generation rules: country weights US 40%, IN 25%, GB 15%, DE 12%, CA 8%. Salary 
 - `POST /api/employees/:id/salaries { amountMinor, effectiveDate, reason, note? }` → `201` salary row. Currency set from employee country. `effectiveDate` after today → 400. `reason = 'hire'` → 400 (only set on create).
 - `GET /api/salary-changes/recent?limit=20` (max 100) → `{ items: { id, employeeId, employeeName, previousMinor | null, amountMinor, currency, changePct | null, effectiveDate, reason, note }[] }` ordered by `effective_date desc, id desc`; `previousMinor` via `lag()` window.
 
-- [ ] **Step 1:** Tests: adding a raise makes it current and keeps the old row; backdated change appears in history but current stays the newer one; future date → 400; recent feed shows previous amount and percent. Run → FAIL.
+- [x] **Step 1:** Tests: adding a raise makes it current and keeps the old row; backdated change appears in history but current stays the newer one; future date → 400; recent feed shows previous amount and percent. Run → FAIL.
 - [x] **Step 2:** Implement. Run → PASS.
-- [ ] **Step 3:** Commit `feat(api): append-only salary changes and recent changes feed`.
+- [x] **Step 3:** Commit `feat(api): append-only salary changes and recent changes feed`.
 
 ### Task 7: Insights
 

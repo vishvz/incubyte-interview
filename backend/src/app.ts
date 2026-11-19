@@ -7,6 +7,7 @@ import { HttpError, todayUtc } from './http.js';
 import { signToken, verifyToken } from './lib/auth.js';
 import { employeesRouter } from './routes/employees.js';
 import { metaRouter } from './routes/meta.js';
+import { salariesRouter } from './routes/salaries.js';
 
 export interface AppOptions {
   corsOrigin: string;
@@ -46,6 +47,7 @@ export function createApp(db: Knex, options: AppOptions) {
 
   app.use('/api/meta', metaRouter(db));
   app.use('/api/employees', employeesRouter(db, { today }));
+  app.use('/api', salariesRouter(db, { today }));
 
   app.use('/api', (_req, res) => {
     res.status(404).json({ error: 'Not found' });
