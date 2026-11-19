@@ -184,7 +184,7 @@ Pages and the question each answers:
 
 Managed Postgres (Neon), API on Render, frontend on Vercel. Set `CORS_ORIGIN`, `VITE_API_URL`, `AUTH_*`. Run migrate + seed on the hosted DB. Commit `chore: deployment config`.
 
-### Task 10: Docs (later session)
+### Task 10: Docs (done)
 
 Root `README.md` (links, live URL, video), `backend/README.md`, `frontend/README.md` with local setup, `docs/architecture.md`, `docs/trade-offs.md`, `docs/performance.md` (`EXPLAIN ANALYZE` of list, distribution and payroll queries on 10k rows), finalize `docs/ai/*`. Commit `docs: architecture, trade-offs, performance and AI notes`.
 

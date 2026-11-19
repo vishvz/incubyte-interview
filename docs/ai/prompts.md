@@ -31,3 +31,9 @@ The chart palette was checked with the dataviz validator. The first green failed
 > we're not going to deploy. i think ui still needs some work. there are no icons or proper ui
 
 Result: deployment dropped from the plan. The UI got an icon set, a proper app shell, an Overview landing page and shared components (page header, stat tile, person cell, reason badge, change delta, empty state). Each page was checked in the browser and with a Lighthouse accessibility audit.
+
+## 6. Documentation
+
+> milestone 10
+
+Result: root, backend and frontend READMEs, plus `architecture.md`, `trade-offs.md` and `performance.md`. The performance numbers come from `EXPLAIN ANALYZE` and timed API calls on the seeded 10,000 employees, not estimates. Screenshots were taken from the running app.
