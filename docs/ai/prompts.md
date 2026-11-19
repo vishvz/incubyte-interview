@@ -37,3 +37,9 @@ Result: deployment dropped from the plan. The UI got an icon set, a proper app s
 > milestone 10
 
 Result: root, backend and frontend READMEs, plus `architecture.md`, `trade-offs.md` and `performance.md`. The performance numbers come from `EXPLAIN ANALYZE` and timed API calls on the seeded 10,000 employees, not estimates. Screenshots were taken from the running app.
+
+## 7. Neon
+
+> Set up this app on Neon. (Neon's setup instructions: install the CLI, `neon init`, `neon deploy`, wire the services, prove it works end to end.)
+
+Result: the backend is linked to a Neon project. Following the Neon Postgres skill, the app keeps `pg` through Knex on the pooled `DATABASE_URL`, and migrations and the seed use the direct `DATABASE_URL_UNPOOLED`. Proven with a built server on Neon: login, reads, insights and a salary change written through the API and read back directly from Neon (and absent from the local database).

@@ -1,8 +1,12 @@
 import { createDb } from '../db/knex.js';
 
-// Usage: npm run migrate            -> DATABASE_URL
+// Usage: npm run migrate            -> DATABASE_URL_UNPOOLED, else DATABASE_URL
 //        npm run migrate -- --test  -> DATABASE_URL_TEST
-const url = process.argv.includes('--test') ? process.env.DATABASE_URL_TEST : process.env.DATABASE_URL;
+// Migrations use the direct (unpooled) connection when there is one: Neon's pooler
+// runs PgBouncer in transaction mode, which does not keep session state.
+const url = process.argv.includes('--test')
+  ? process.env.DATABASE_URL_TEST
+  : process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL;
 if (!url) throw new Error('Database URL is not set');
 
 const db = createDb(url);

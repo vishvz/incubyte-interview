@@ -23,6 +23,27 @@ npm run dev                # http://localhost:4000, reloads on change
 | `AUTH_PASSWORD` | Shared HR password, at least 12 characters |
 | `AUTH_SECRET` | Key for signing login tokens, at least 16 characters |
 
+## Using Neon instead of local PostgreSQL
+
+The backend is linked to a Neon project (`neon.ts`, `.neon`). To point it at Neon:
+
+```bash
+npm i -g neon@latest
+neon login
+neon deploy            # writes DATABASE_URL (pooled) and DATABASE_URL_UNPOOLED (direct) into .env
+npm run migrate        # uses DATABASE_URL_UNPOOLED
+npm run seed           # uses DATABASE_URL_UNPOOLED, about 15 s over the network
+npm run build && npm start
+```
+
+- The API keeps the `pg` driver through Knex. It is a long-running Node server, so a normal connection pool is right; the serverless driver is for edge and serverless runtimes.
+- App queries use the pooled `DATABASE_URL`. Migrations and the seed use the direct `DATABASE_URL_UNPOOLED`, because Neon's pooler (PgBouncer in transaction mode) does not keep session state across a long transaction.
+- Tests always use `DATABASE_URL_TEST`, so they never touch Neon.
+
+| Variable | Meaning |
+| --- | --- |
+| `DATABASE_URL_UNPOOLED` | Optional direct connection for migrations and the seed (falls back to `DATABASE_URL`) |
+
 ## Scripts
 
 | Script | What it does |

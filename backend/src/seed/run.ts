@@ -1,9 +1,10 @@
-// Usage: npm run seed  (uses DATABASE_URL; SEED and SEED_COUNT are optional)
+// Usage: npm run seed  (DATABASE_URL_UNPOOLED, else DATABASE_URL; SEED and SEED_COUNT are optional)
+// The seed is one long transaction, so it uses the direct connection when there is one.
 import { createDb } from '../db/knex.js';
 import { generateEmployees } from './generate.js';
 import { FX_RATES, PAY_BANDS } from '../reference.js';
 
-const url = process.env.DATABASE_URL;
+const url = process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL;
 if (!url) throw new Error('DATABASE_URL is not set');
 const seed = Number(process.env.SEED ?? 42);
 const count = Number(process.env.SEED_COUNT ?? 10_000);
